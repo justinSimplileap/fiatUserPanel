@@ -10,6 +10,9 @@ import { euroFormat } from "~/helpers/helper";
 import Head from "next/head";
 import BlackRightArrow from "../../assets/general/back_arrow_r.svg";
 import BlackLeftArrow from "../../assets/general/back_arrow_l.svg";
+import EURO_COIN from "../../assets/currency/EURO_COIN.svg";
+import GBP_COIN from "../../assets/currency/GBP_COIN.svg";
+import USD_COIN from "../../assets/currency/USD_COIN.svg";
 import Image from "next/image";
 import PaymentActivity from "../payment-activity/paymentActivity";
 import { checkMerchants } from "~/service/api/accounts";
@@ -156,6 +159,31 @@ const Dashboard = () => {
     sum = sum + Number(item.assetValue);
   });
 
+  console.log({ assetChunks });
+
+  const cards = [
+    {
+      name: "EUR",
+      icon: EURO_COIN,
+      balance: 58808764.25,
+      accountNumber: "1JunQ*****1Q2N",
+    },
+
+    {
+      name: "GBP",
+      icon: GBP_COIN,
+      balance: 58764.64,
+      accountNumber: "1JunQ*****1Q2N",
+    },
+
+    {
+      name: "USD",
+      icon: USD_COIN,
+      balance: 58764.64,
+      accountNumber: "1JunQ*****1Q2N",
+    },
+  ];
+
   return (
     <Fragment>
       <Head>
@@ -165,7 +193,7 @@ const Dashboard = () => {
       </Head>
 
       {/* Company verification */}
-      {verificationStatus.identity === "PENDING" && (
+      {/* {verificationStatus.identity === "PENDING" && (
         <WarningMsg
           handleClick={() => handleVerifyScreen(true)}
           element={
@@ -176,9 +204,9 @@ const Dashboard = () => {
             </span>
           }
         />
-      )}
+      )} */}
 
-      {!companyVerified &&
+      {/* {!companyVerified &&
         verificationStatus.company === "PENDING" &&
         verificationStatus.identity !== "PENDING" && (
           <WarningMsg
@@ -191,108 +219,35 @@ const Dashboard = () => {
             }
             handleClick={() => handleCompanyVerifyScreen(true)}
           />
-        )}
+        )} */}
 
       <div className="dashboardContainer m-auto w-[95%]">
-        {/* section 1 */}
-        <div className="welcomeBoard mt-4 flex flex-col md:flex-row md:items-center md:justify-between ">
-          <div>
-            <p className=" text-xl font-bold">
-              Welcome &nbsp;
-              <span className=" text-[#c1922e]">{`${
-                dashboard.firstname ?? ""
-              } ${dashboard?.lastname ?? ""}`}</span>
-              ,
-            </p>
-            <p className="text-xl">Here is your dashboard</p>
-          </div>
-
-          <div className="acBalanceCard mr-[-2.6%] mt-2 flex items-center gap-4 rounded-l-lg py-4 pl-8 pr-16 shadow-[0px_4px_8px_0px_rgba(0,0,0,0.1)]">
-            <p className=" font-mono text-5xl text-[#C1922E]">€</p>
-            <div>
-              <p className="text-3xl font-bold">
-                {euroFormat.format(sum ?? 0).split("€")}
-              </p>
-              <p className="mt-1 text-xs">
-                All account balance in {dashboard.currency}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
+        {/* <div
           ref={divReference}
           className="myAccount relative mt-4 rounded-md bg-white p-6 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)]"
         >
-          <p className="text-base font-bold">MY ACCOUNTS</p>
-          {/* Cards */}
-          <div className={`relative w-full h-[${assetsHeight}] `}>
-            {assetChunks.map((chunk, index) => (
-              <div
-                key={index}
-                className={`${currentIndex === index ? "block" : "hidden"}`}
-              >
-                <div className="exchangeCards mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
-                  {chunk.map((item: any, itemIndex: any) => (
-                    <WalletCard
-                      key={itemIndex}
-                      walletDetails={item}
-                      currency={dashboard.currency}
-                    />
-                  ))}
-                </div>
+          <div className="exchangeCards mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+            {cards.map((chunk, index) => (
+              <div key={index}>
+                <WalletCard walletDetails={chunk} />
               </div>
             ))}
-
-            <button
-              className=" ml-[50%] mt-8 h-10 w-10 -translate-x-[80px] transform lg:absolute lg:left-[-45px] lg:top-1/2 lg:ml-0 lg:mt-0 lg:-translate-x-0 lg:-translate-y-1/2 "
-              onClick={prevSlide}
-            >
-              <Image src={BlackLeftArrow} alt="Left arrow" />
-            </button>
-            <button
-              className="mt-8 h-10 w-10 transform lg:absolute lg:right-[-45px] lg:top-1/2 lg:mt-0 lg:-translate-y-1/2"
-              onClick={nextSlide}
-            >
-              <Image src={BlackRightArrow} alt="Right arrow" />
-            </button>
           </div>
+        </div> */}
+
+        <div className="my-6">
+          <TableComponent />
         </div>
-
-        {authBody?.userType &&
-        (authBody?.userType === "PROJECT" || merchantsAvailable) ? (
-          <div className="my-6">
-            <PaymentActivity />
-          </div>
-        ) : (
-          authBody?.userType &&
-          authBody?.userType !== "COMPANY" && (
-            <div className="my-6">
-              <PaymentActivity />
-            </div>
-          )
-        )}
-
-        {authBody?.userType !== "PROJECT" && !merchantsAvailable ? (
-          <div className="my-6">
-            <TableComponent
-              selectedCurrency={""}
-              selectedTransaction={""}
-              startDate={""}
-              endDate={""}
-            />
-          </div>
-        ) : null}
       </div>
 
-      {identityVerification && verificationStatus.identity === "PENDING" && (
+      {/* {identityVerification && verificationStatus.identity === "PENDING" && (
         <VerificationScreen close={() => handleVerifyScreen(false)} />
-      )}
+      )} */}
 
-      {companyVerificationScreen &&
+      {/* {companyVerificationScreen &&
         verificationStatus.company === "PENDING" && (
           <CompanyVerification close={() => handleCompanyVerifyScreen(false)} />
-        )}
+        )} */}
     </Fragment>
   );
 };

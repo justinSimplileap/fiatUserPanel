@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import home from "../../assets/navicons/home.svg";
 import exchange from "../../assets/navicons/exchange.svg";
+import blktrade from "../../assets/navicons/blktrade.png";
+import counterIcon from "../../assets/navicons/counterparties.svg";
 import transfers from "../../assets/navicons/transfers.svg";
 import reports from "../../assets/navicons/report.svg";
 import profile from "../../assets/navicons/profile.svg";
@@ -62,41 +64,13 @@ const Sidebar: React.FC = () => {
     setallStaffsCheck(authBody?.allStaffs ?? "");
   }, []);
 
-  let routes: Route[] = [
+  const routes: Route[] = [
     { name: "dashboard", path: "/app/dashboard", icon: home },
-    { name: "exchange", path: "/app/exchange", icon: exchange },
     { name: "transfers", path: "/app/transfers", icon: transfers },
     { name: "Reports", path: "/app/reports", icon: reports },
-    { name: "profile", path: "/app/profile", icon: profile },
+    { name: "Counterparties", path: "/app/counterparties", icon: counterIcon },
+    { name: "My profile", path: "/app/profile", icon: profile },
   ];
-
-  if (userType === "PROJECT") {
-    routes = routes.filter((route) => route.name !== "exchange");
-  }
-
-  if (
-    Array.isArray(allStaffsCheck) &&
-    allStaffsCheck.every(
-      (user) =>
-        Array.isArray(user.projectUsers) && user.projectUsers.length > 0,
-    )
-  ) {
-    if (userType === "PROJECT" || userType === "COMPANY") {
-      routes.splice(2, 0, {
-        name: "invoices",
-        path: "/app/invoices",
-        icon: invoices,
-      });
-
-      if (userType === "PROJECT") {
-        routes.splice(5, 0, {
-          name: "Bulk Payout",
-          path: "/app/bulkPayout",
-          icon: bulkupload,
-        });
-      }
-    }
-  }
 
   return (
     <>
@@ -104,24 +78,24 @@ const Sidebar: React.FC = () => {
       <nav
         className={`${
           !open ? "w-full md:w-48 " : "w-[70px]"
-        }   hidden h-screen duration-500 md:block`}
+        }   hidden h-screen bg-black duration-500 md:block`}
       >
         <div className="logo relative flex h-20 items-center justify-center bg-black ">
           {admin?.profileImgLink && (
-            <div className="logo relative flex items-center justify-center py-2  ">
+            <div className="logo relative flex items-center justify-center py-1 ">
               <Image
                 alt={"Profile"}
-                className="h-auto w-[100px] object-cover"
-                src={admin?.profileImgLink || profileImgLink}
-                width={"150"}
-                height={"100"}
+                className="h-auto w-[150px] object-cover"
+                src={blktrade}
+                width={"200"}
+                height={"200"}
                 priority={true}
               />
             </div>
           )}
         </div>
 
-        <div className=" flex  flex-col gap-8 pl-6 pt-12 capitalize">
+        <div className=" flex flex-col gap-8  bg-black pl-6 pt-12 capitalize text-gray-500">
           {routes.map((item: any, i: any) => {
             return (
               <div
@@ -146,8 +120,8 @@ const Sidebar: React.FC = () => {
                       // transitionDelay: `${i + 3}00ms`,
                     }
                   }
-                  className={`font-semibold group-hover:text-[#C3922E] ${
-                    pathName === item.path && "text-[#C3922E]"
+                  className={`font-semibold group-hover:text-[#fff] ${
+                    pathName === item.path && "text-white"
                   }  ${open && "pointer-events-none opacity-0"}`}
                 >
                   {item?.name}
@@ -156,7 +130,7 @@ const Sidebar: React.FC = () => {
             );
           })}
         </div>
-        <div className="absolute bottom-6 mt-5 flex flex-col justify-center gap-9 pl-6 capitalize">
+        {/* <div className="  absolute bottom-6 mt-5 flex flex-col justify-center gap-9 pl-6 capitalize">
           <button
             className="group flex cursor-pointer items-center gap-3"
             onClick={LogoutUser}
@@ -174,7 +148,7 @@ const Sidebar: React.FC = () => {
               Logout
             </h1>
           </button>
-        </div>
+        </div> */}
       </nav>
       {/* Mobile */}
       <nav

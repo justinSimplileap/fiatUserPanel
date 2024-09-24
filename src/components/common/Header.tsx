@@ -108,113 +108,28 @@ const Topbar: React.FC<HeaderProps> = ({ title }) => {
       style={{
         boxShadow: "1.1802083253860474px 0px 5.901041507720947px 0px #0000000D",
       }}
-      className=" relative bg-black"
+      className=" relative bg-white text-black"
     >
-      <Dialog
-        open={openSwitchAccounts}
-        onClose={() => {
-          setopenSwitchAccounts(false);
-        }}
-        className="absolute right-[3.3%] top-[5.5rem] z-[999] rounded-lg bg-white shadow-[0px_1px_8px_0px_rgba(0,0,0,0.25)] outline-none"
-      >
-        <div className=" min-w-[360px]: max-h-[65vh] overflow-y-auto px-2  py-4">
-          {swicthAccounts.map((item, i) => (
-            <div
-              key={i}
-              className={`${
-                item?.token === activeAccount
-                  ? "relative  bg-[#FFF4DE] shadow-md hover:bg-[#fff2d8]"
-                  : " relative"
-              } rounded-lg hover:bg-slate-100`}
-              onClick={() => {
-                void changeToken(item);
-              }}
-            >
-              <div className="flex cursor-pointer items-center justify-between gap-8 px-6 py-3 ">
-                <div className=" flex items-center">
-                  <div>
-                    <Image
-                      alt="Profile"
-                      className="h-11 w-11 rounded-full object-cover"
-                      src={
-                        typeof item?.profileImgLink === "string"
-                          ? `${item.profileImgLink}?t=${new Date().getTime()}`
-                          : DefaultProfileYellow
-                      }
-                      width={42}
-                      height={42}
-                    ></Image>
-                  </div>
-
-                  <div className=" ml-4">
-                    <p className="font-bold"> {item?.fullname}</p>
-                    <p>{item?.email}</p>
-                  </div>
-                </div>
-
-                <p className="absolute right-2 top-2 text-xs font-semibold">
-                  {item?.userType}
-                </p>
-
-                {item?.token === activeAccount ? (
-                  <Image className=" h-5 w-5" src={Check} alt="Selected" />
-                ) : (
-                  ""
-                )}
-              </div>
-              {/* {isUserInAccount(item.token) && (
-                <div className="text-green-500"> &#10003; </div>
-              )} */}
-            </div>
-          ))}
-        </div>
-      </Dialog>
       <div
         className={` z-[9999] m-auto flex h-20 w-[95%] items-center justify-between`}
       >
         <div className="flex items-center gap-8">
-          <Image
+          {/* <Image
             src={menu as StaticImageData}
             alt=""
-            className="cursor-pointer brightness-[10]"
+            className="cursor-pointer text-black brightness-[100]"
             onClick={handleSidebar}
-          />
-          <h1 className="px-1 text-sm text-white md:text-lg">
+          /> */}
+          <h1 className="px-1 text-sm  md:text-lg">
             {title === "bulkPayout" ? "Bulk Payout" : title}
           </h1>
         </div>
         <div className="flex items-center gap-8">
-          <Image className=" hidden" alt="" src={message as StaticImageData} />
-          <div className="hidden items-center gap-1">
+          <Image className=" " alt="" src={message as StaticImageData} />
+          <div className="flex items-center gap-3 text-white">
             <Image alt="" src={flag as StaticImageData} />
             <p>English</p>
           </div>
-          <Box
-            onClick={() => {
-              setopenSwitchAccounts(true);
-            }}
-          >
-            <div className="flex items-center gap-2 rounded-[44px] bg-[#2C2C2C] px-4 py-2">
-              <p className=" text-white">{activeName}</p>
-              <Image
-                alt="Profile"
-                className="h-[42px] w-[42px] cursor-pointer rounded-full object-cover"
-                src={
-                  profileImgLink
-                    ? `${profileImgLink}?t=${new Date().getTime()}`
-                    : DefaultProfileYellow
-                }
-                width="42"
-                height="42"
-              />
-              <Image
-                className=" h-2 w-3"
-                style={{ filter: "brightness(10)" }}
-                src={ArrowDown}
-                alt="down arrow"
-              />
-            </div>
-          </Box>
         </div>
       </div>
     </div>

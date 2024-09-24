@@ -37,8 +37,42 @@ interface DropDownOptionsResponseType {
   countryCode?: string;
 }
 
+interface reportHeaderval {
+  "CREATION DATE": string;
+  ACCOUNT: string;
+  "BENEFICIARY NAME": string;
+  "BENEFICIARY IBAN": string;
+  STATUS: string;
+  "CLIENT ID": string;
+  AMOUNT: string;
+  CURRENCY: string;
+  FEE: string;
+  BALANCE: string;
+}
+
+interface displayFilterType {
+  label: string;
+  name: string;
+}
+
+type RowData = {
+  creationDate: string;
+  account: string;
+  beneficiaryName: string;
+  beneficiaryIban: string;
+  status: string;
+  clientId: string;
+  amount: string;
+  currency: string;
+  fee: string;
+  balance: string;
+};
+
 export type {
   CountryListType,
+  RowData,
   DropDownOptionsType,
   DropDownOptionsResponseType,
+  reportHeaderval,
+  displayFilterType,
 };

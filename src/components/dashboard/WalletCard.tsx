@@ -8,17 +8,20 @@ import { Dialog, Snackbar } from "@mui/material";
 import Copy from "~/assets/general/copy.svg";
 
 type imageType = StaticImageData;
+function formatCurrency(balance: number) {
+  const formatted = new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(balance);
+  const [integerPart, decimalPart] = formatted.split(".");
 
-interface WalletCardProps {
-  walletDetails: DashboardAssetType;
-  currency?: string;
+  return { integerPart, decimalPart };
 }
+const WalletCard: React.FC<any> = ({ walletDetails }) => {
+  console.log("walletDetails: ", walletDetails);
 
-const WalletCard: React.FC<WalletCardProps> = ({ walletDetails, currency }) => {
-  const [openqr, setOpen] = useState(false);
+  const { integerPart, decimalPart } = formatCurrency(walletDetails.balance);
   const [messagePopup, setMessagePopup] = useState(false);
-
-  const toggleOpen = useCallback(() => setOpen((prev) => !prev), []);
 
   const onCopy = () => {
     if (walletDetails.assetAddress) {
@@ -29,63 +32,18 @@ const WalletCard: React.FC<WalletCardProps> = ({ walletDetails, currency }) => {
     }
   };
 
+  function currencyIcon(item: string) {
+    return item === "EUR"
+      ? "€"
+      : item === "USD"
+      ? "$"
+      : item === "GBP"
+      ? "£"
+      : "";
+  }
+
   return (
     <Fragment>
-      <Snackbar
-        open={messagePopup}
-        anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        onClose={() => setMessagePopup(false)}
-        autoHideDuration={1000}
-        message="Copied to clipboard"
-      />
-      {!!walletDetails.qrImage && (
-        <Dialog
-          open={openqr}
-          onClose={toggleOpen}
-          fullWidth
-          sx={{
-            "& .MuiDialog-container": {
-              "& .MuiPaper-root": {
-                width: "auto",
-                maxWidth: "750px",
-              },
-            },
-          }}
-        >
-          <div className=" h-full w-full rounded p-8 md:h-[35vh]">
-            <div className="flex h-full w-full flex-col items-center md:flex-row">
-              <Image
-                className=" aspect-square w-40"
-                alt="qr code"
-                src={walletDetails.qrImage ?? ""}
-                width={20}
-                height={20}
-              />
-              <div className="flex flex-col items-center justify-center gap-2 md:items-start md:justify-start ">
-                <p className=" text-xl font-bold">Wallet address</p>
-                <div className="flex flex-col items-center justify-center gap-2 md:flex-row md:justify-start">
-                  <p className=" break-all text-center font-medium sm:break-normal sm:text-start">
-                    {walletDetails.assetAddress}
-                  </p>
-                  <Image
-                    onClick={onCopy}
-                    className="cursor-pointer"
-                    src={Copy as StaticImageData}
-                    alt="Copy"
-                  />
-                </div>
-
-                <button
-                  onClick={toggleOpen}
-                  className=" cursor-pointer text-sm"
-                >
-                  <p className=" text-base font-bold text-[#C1922E]">Go back</p>
-                </button>
-              </div>
-            </div>
-          </div>
-        </Dialog>
-      )}
       <div
         key={walletDetails.id}
         className="exchangeCard gradientCard rounded-md bg-white p-5
@@ -94,57 +52,36 @@ const WalletCard: React.FC<WalletCardProps> = ({ walletDetails, currency }) => {
         <div className="flex items-center justify-between gap-8">
           <div className="flex items-center gap-3">
             <Image
-              className="aspect-square h-14 w-14 "
+              className="aspect-square h-6 w-6 "
               src={walletDetails.icon ?? ""}
               width={15}
               height={15}
               alt="Icon"
             />
+
             <div>
-              <p className="text-sm font-bold text-[#99B2C6]">
+              <p className="text-sm font-medium text-gray-500">
                 {walletDetails.name}
-              </p>
-              <p className="text-2xl font-bold">
-                {Number(walletDetails.balance)
-                  ? Number(walletDetails.balance)?.toFixed(6)
-                  : 0}
-              </p>
-              <p className="text-xs font-semibold ">
-                {`${euroFormat.format(walletDetails?.assetValue) ?? 0} ${
-                  currency ?? ""
-                }`}
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <p className="flex items-baseline text-[30px] font-medium">
+            {currencyIcon(walletDetails.name)} {integerPart}
+            <span className="text-[20px] text-gray-500">.{decimalPart}</span>
+          </p>
           <Link href={`./transfers/?from=` + walletDetails.assetId}>
             <Image alt="" src={arrowUp as imageType} />
           </Link>
         </div>
-        <div className="mt-4 flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold">Wallet address</p>
-            <div className="flex gap-2">
-              <p
-                className=" break-all text-base xl:break-normal
-xl:text-sm"
-              >
-                {maskAddress(walletDetails.assetAddress, walletDetails.assetId)}
-              </p>
-              <Image
-                onClick={onCopy}
-                className=" cursor-pointer"
-                src={Copy as StaticImageData}
-                alt="Copy"
-              />
-            </div>
-          </div>
 
-          <Image
-            className=" h-11 w-11"
-            alt=""
-            src={qrScanner as imageType}
-            onClick={toggleOpen}
-          />
+        <div className=" flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-gray-500">Account</p>
+            <p className="text-sm ">{walletDetails.accountNumber}</p>
+          </div>
         </div>
       </div>
     </Fragment>
