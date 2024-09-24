@@ -222,18 +222,28 @@ const Dashboard = () => {
         )} */}
 
       <div className="dashboardContainer m-auto w-[95%]">
-        {/* <div
+        <div className="my-5">
+          <p className=" text-xl font-bold">
+            Welcome &nbsp;
+            <span className=" text-[#c1922e]">{`${dashboard.firstname ?? ""} ${
+              dashboard?.lastname ?? ""
+            }`}</span>
+          </p>
+          <p className="text-xl">Here are your insights</p>
+        </div>
+
+        <div
           ref={divReference}
           className="myAccount relative mt-4 rounded-md bg-white p-6 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)]"
         >
-          <div className="exchangeCards mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+          <div className="exchangeCards  grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
             {cards.map((chunk, index) => (
               <div key={index}>
                 <WalletCard walletDetails={chunk} />
               </div>
             ))}
           </div>
-        </div> */}
+        </div>
 
         <div className="my-6">
           <TableComponent />

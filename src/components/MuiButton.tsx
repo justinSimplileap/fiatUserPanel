@@ -15,6 +15,7 @@ interface MuiButtonProps extends Omit<ButtonProps, "color"> {
   loading?: boolean;
   useLoading?: boolean;
   borderColor?: string;
+  className?: string;
 }
 
 const MuiButton: React.FC<MuiButtonProps> = ({
@@ -27,6 +28,7 @@ const MuiButton: React.FC<MuiButtonProps> = ({
   children,
   borderRadius,
   borderColor,
+  className,
   useLoading = false,
   loading = false,
   ...props
@@ -52,7 +54,7 @@ const MuiButton: React.FC<MuiButtonProps> = ({
         padding: padding ? padding : "0.4rem 1rem",
         borderRadius: borderRadius ? borderRadius : "0.6rem",
       }}
-      className="!font-['Segoe UI'] active:scale-95"
+      className={`!font-['Segoe UI'] active:scale-95 ${className}`}
       onClick={useLoading ? _onClick : onClick}
     >
       {loading || isLoading ? <LoaderIcon className="mr-4 h-4 w-4" /> : null}

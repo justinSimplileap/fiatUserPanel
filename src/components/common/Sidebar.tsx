@@ -20,6 +20,7 @@ import localStorageService from "~/service/LocalstorageService";
 import useGlobalStore from "~/store/useGlobalStore";
 import { checkMerchants, checkUserStatus } from "~/service/api/accounts";
 import { useRouter } from "next/router";
+import menu from "../../assets/headericons/menu.svg";
 
 interface Route {
   name: string;
@@ -85,15 +86,24 @@ const Sidebar: React.FC = () => {
             <div className="logo relative flex items-center justify-center py-1 ">
               <Image
                 alt={"Profile"}
-                className="h-auto w-[150px] object-cover"
+                className=" object-cover"
                 src={blktrade}
-                width={"200"}
+                width={"150"}
                 height={"200"}
                 priority={true}
               />
             </div>
           )}
+
+          <Image
+            src={menu as StaticImageData}
+            alt=""
+            className="absolute -right-3 z-[9999] cursor-pointer "
+            onClick={handleSidebar}
+          />
         </div>
+
+        <div className="m-auto mt-5 h-[1.5px] w-[90%] bg-gray-500"></div>
 
         <div className=" flex flex-col gap-8  bg-black pl-6 pt-12 capitalize text-gray-500">
           {routes.map((item: any, i: any) => {
@@ -109,11 +119,10 @@ const Sidebar: React.FC = () => {
                 <Image
                   alt=""
                   src={item.icon as StaticImageData}
-                  className={` brightness-[0]  ${
-                    pathName === item.path && "brightness-[1]"
+                  className={`${
+                    pathName === item.path ? "opacity-100" : "opacity-50"
                   }`}
                 />
-
                 <h1
                   style={
                     {
@@ -154,22 +163,22 @@ const Sidebar: React.FC = () => {
       <nav
         className={`fixed h-full  w-1/2 bg-black lg:w-[35vw] ${
           open ? "left-0" : "-left-full"
-        } top-0 z-50 block p-1 duration-500 md:hidden`}
+        } top-0 z-[9999] block p-1 duration-500 md:hidden`}
       >
-        <div className="logo relative flex h-[15vh] justify-end p-5 text-white">
+        <div className="logo relative flex  justify-end p-5 text-white">
           <RiCloseCircleLine
             onClick={handleSidebar}
             className="h-5 w-5 cursor-pointer"
           />
         </div>
-        <div className="logo relative flex h-[10vh] items-center justify-center text-white">
+        <div className="logo relative flex  items-center justify-center text-white">
           {admin?.profileImgLink && (
             <Image
               alt={"Profile"}
-              className="h-auto w-[100px] object-cover"
-              src={admin?.profileImgLink || profileImgLink}
-              width={"150"}
-              height={"100"}
+              className=" object-cover"
+              src={blktrade}
+              width={"200"}
+              height={"200"}
               priority={true}
             />
           )}
@@ -188,8 +197,8 @@ const Sidebar: React.FC = () => {
               <Image
                 alt=""
                 src={item.icon as StaticImageData}
-                className={`group-hover:brightness-200  ${
-                  pathName === item.path && "brightness-200"
+                className={`${
+                  pathName === item.path ? "opacity-100" : "opacity-50"
                 }`}
               />
               <h1
@@ -207,7 +216,7 @@ const Sidebar: React.FC = () => {
             </div>
           ))}
         </div>
-        <div className="absolute bottom-6 mt-5 flex flex-col justify-center gap-7 pl-6 capitalize">
+        {/* <div className="absolute bottom-6 mt-5 flex flex-col justify-center gap-7 pl-6 capitalize">
           <button
             className="group flex cursor-pointer items-center gap-3"
             onClick={LogoutUser}
@@ -225,7 +234,7 @@ const Sidebar: React.FC = () => {
               Logout
             </h1>
           </button>
-        </div>
+        </div> */}
       </nav>
     </>
   );

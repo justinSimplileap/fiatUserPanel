@@ -6,6 +6,7 @@ import qrScanner from "../../assets/general/qr_code_scanner.svg";
 import { euroFormat, maskAddress } from "~/helpers/helper";
 import { Dialog, Snackbar } from "@mui/material";
 import Copy from "~/assets/general/copy.svg";
+import right_arrow from "~/assets/general/right_arrow.svg";
 
 type imageType = StaticImageData;
 function formatCurrency(balance: number) {
@@ -77,12 +78,13 @@ const WalletCard: React.FC<any> = ({ walletDetails }) => {
           </Link>
         </div>
 
-        <div className=" flex items-center justify-between gap-4">
-          <div>
-            <p className="text-sm font-medium text-gray-500">Account</p>
-            <p className="text-sm ">{walletDetails.accountNumber}</p>
-          </div>
-        </div>
+        <Link
+          className=" my-2 flex cursor-pointer items-center gap-2"
+          href={`./profile`}
+        >
+          <p className="text-md">View Account info </p>
+          <Image alt="" src={right_arrow as imageType} />
+        </Link>
       </div>
     </Fragment>
   );

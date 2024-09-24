@@ -11,6 +11,7 @@ import { Box } from "@mui/material";
 import localStorageService from "~/service/LocalstorageService";
 import { useRouter } from "next/router";
 import ArrowDown from "../../assets/general/arrow_down.svg";
+import profile from "../../assets/headericons/IMAGE.png";
 import { Dialog } from "@headlessui/react";
 // import DefaultProfile from "~/assets/images/defaultProfileImage.png";
 // import Link from "next/link";
@@ -114,22 +115,24 @@ const Topbar: React.FC<HeaderProps> = ({ title }) => {
         className={` z-[9999] m-auto flex h-20 w-[95%] items-center justify-between`}
       >
         <div className="flex items-center gap-8">
-          {/* <Image
+          <Image
             src={menu as StaticImageData}
             alt=""
-            className="cursor-pointer text-black brightness-[100]"
+            className="cursor-pointer md:hidden "
             onClick={handleSidebar}
-          /> */}
+          />
           <h1 className="px-1 text-sm  md:text-lg">
             {title === "bulkPayout" ? "Bulk Payout" : title}
           </h1>
         </div>
         <div className="flex items-center gap-8">
           <Image className=" " alt="" src={message as StaticImageData} />
-          <div className="flex items-center gap-3 text-white">
+          <div className="flex items-center gap-3 ">
             <Image alt="" src={flag as StaticImageData} />
             <p>English</p>
           </div>
+
+          <Image className=" " alt="" src={profile as StaticImageData} />
         </div>
       </div>
     </div>

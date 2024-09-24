@@ -115,8 +115,8 @@ const ReportTable: React.FC = () => {
         )}
       </Popper>
 
-      <div className="mb-5 flex items-center justify-between">
-        <h2 className="mb-4 text-xl font-semibold text-gray-700">
+      <div className="mb-3 flex items-center justify-between">
+        <h2 className=" text-xl font-semibold text-gray-700">
           RECENT ACTIVITY
         </h2>
 
