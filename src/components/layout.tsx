@@ -17,7 +17,7 @@ const Layout = ({ children, title }: Props) => {
   return (
     <>
       <SidebarProvider>
-        <div className="flex h-[100vh]">
+        <div className="flex h-[100vh] ">
           <div className="">
             {!routesArray.includes(pathName) && <Sidebar />}
           </div>

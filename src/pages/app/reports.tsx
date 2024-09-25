@@ -14,15 +14,11 @@ const ReportsPage = () => {
   useEffect(() => {
     const authBody = localStorageService.decodeAuthBody();
     setAuthBody(authBody);
-    console.log("authBodyauthBody", authBody)
-  }, [])
+    console.log("authBodyauthBody", authBody);
+  }, []);
   return (
     <Layout title="Reports">
-      {authBody?.userType && authBody?.userType === 'PROJECT' ? (
-        <Ecomreports />
-      ) : (
-        <Reports />
-      )}
+      <Reports />
     </Layout>
   );
 };

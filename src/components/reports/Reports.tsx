@@ -2,16 +2,14 @@ import React, { useEffect, useState } from "react";
 // import download from "~/assets/general/download_icon.svg";
 import cancel from "~/assets/general/cancel_icon.svg";
 import filtericon from "~/assets/general/filter.svg";
+import downloadcsv from "~/assets/general/downloadcsv.svg";
 import Image, { type StaticImageData } from "next/image";
-import Button from "~/components/common/Button";
 import { useForm } from "react-hook-form";
-// import ExchangeDropdown from "../common/ExchangeDropdown";
-import TableComponent from "../TableComponent";
 import { getOperationTypeUserpanel } from "../../service/api/pricelists";
 import { getAllAssets } from "../../service/api/accounts";
 import MuiButton from "../MuiButton";
-import { MenuItem, Select } from "@mui/material";
-
+import { MenuItem, Select, TextField } from "@mui/material";
+import TableComponent from "../TableComponent";
 export interface currencyType {
   id: number;
   name: string;
@@ -93,11 +91,16 @@ const Reports = () => {
               {!showFilter ? "View filters" : "Hide Filter"}
             </p>
           </div>
-          {/* <Image
-            src={download as StaticImageData}
-            alt=""
-            className="cursor-pointer"
-          /> */}
+
+          <MuiButton
+            name=""
+            background="white"
+            borderColor="#217EFD"
+            color="#217EFD"
+          >
+            <Image src={downloadcsv} alt=""></Image>
+            Download CSV
+          </MuiButton>
         </div>
 
         <br />
@@ -105,7 +108,7 @@ const Reports = () => {
         {/* dropdowns  */}
         {showFilter && (
           <form onSubmit={handleSubmit(handleApplyFilters)}>
-            <div className="mb-8 grid grid-cols-1 items-center gap-5 rounded-lg border border-slate-200 p-5 shadow md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-5">
+            <div className="mb-8 grid grid-cols-1 items-center gap-5 rounded-lg border border-slate-200 p-5 shadow md:grid-cols-2  lg:grid-cols-3 xl:grid-cols-4">
               {/* <ExchangeDropdown
                 name="currency"
                 label="Currency"
@@ -122,7 +125,7 @@ const Reports = () => {
                 placeholder="Currency"
               /> */}
 
-              <div>
+              {/* <div>
                 <p>Currency</p>
                 <Select
                   sx={{
@@ -155,10 +158,10 @@ const Reports = () => {
                       ),
                   )}
                 </Select>
-              </div>
+              </div> */}
 
               <div>
-                <p>Transactions</p>
+                <p> All Transactions</p>
                 <Select
                   sx={{
                     "& .MuiOutlinedInput-notchedOutline": {
@@ -218,19 +221,18 @@ const Reports = () => {
               </div>
 
               <div className="mt-4 flex justify-between">
-                <Button
-                  className="flex justify-center bg-[#C1922E] px-4 py-3 "
-                  title={"Apply Filters"}
+                <MuiButton
+                  color="white"
+                  borderColor="white"
+                  background="#217EFD"
+                  name={"Apply Filters"}
                   type="submit"
                 />
-                <MuiButton
+                {/* <MuiButton
+                  name="Clear Filter"
                   className="flex justify-center"
-                  name={"Reset Filters"}
-                  background="#ffffff"
-                  color="#C1922E"
-                  padding="0.4rem 0.75rem"
                   onClick={handleResetFilters}
-                />
+                /> */}
               </div>
             </div>
           </form>
@@ -239,12 +241,16 @@ const Reports = () => {
 
       {/* table  */}
       <div className="pb-1">
-        <TableComponent
+        {/* <TableComponent
           selectedCurrency={selectedCurrency}
           selectedTransaction={selectedTransaction}
           startDate={startDate}
           endDate={endDate}
-        />
+        /> */}
+
+        <div className="my-6">
+          <TableComponent />
+        </div>
       </div>
     </div>
   );

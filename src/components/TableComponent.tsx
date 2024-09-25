@@ -132,6 +132,7 @@ const ReportTable: React.FC = () => {
       </div>
 
       <div
+        className="no-scrollbar overflow-y-scroll"
         style={{
           overflowX: "auto", // Horizontal scrolling
           overflowY: "auto", // Vertical scrolling
@@ -139,7 +140,7 @@ const ReportTable: React.FC = () => {
           maxHeight: "700px",
         }}
       >
-        <table className="w-full min-w-[1000px] border-collapse">
+        <table className=" w-full min-w-[1000px] border-collapse ">
           {/* Ensures table has a minimum width */}
           <thead>
             <tr

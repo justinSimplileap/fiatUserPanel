@@ -6,13 +6,11 @@ import CompanyVerification from "../verification/company-verification/MainScreen
 import localStorageService from "~/service/LocalstorageService";
 import useGlobalStore from "~/store/useGlobalStore";
 import TableComponent from "../TableComponent";
-import { euroFormat } from "~/helpers/helper";
+import { cards, euroFormat } from "~/helpers/helper";
 import Head from "next/head";
 import BlackRightArrow from "../../assets/general/back_arrow_r.svg";
 import BlackLeftArrow from "../../assets/general/back_arrow_l.svg";
-import EURO_COIN from "../../assets/currency/EURO_COIN.svg";
-import GBP_COIN from "../../assets/currency/GBP_COIN.svg";
-import USD_COIN from "../../assets/currency/USD_COIN.svg";
+
 import Image from "next/image";
 import PaymentActivity from "../payment-activity/paymentActivity";
 import { checkMerchants } from "~/service/api/accounts";
@@ -160,29 +158,6 @@ const Dashboard = () => {
   });
 
   console.log({ assetChunks });
-
-  const cards = [
-    {
-      name: "EUR",
-      icon: EURO_COIN,
-      balance: 58808764.25,
-      accountNumber: "1JunQ*****1Q2N",
-    },
-
-    {
-      name: "GBP",
-      icon: GBP_COIN,
-      balance: 58764.64,
-      accountNumber: "1JunQ*****1Q2N",
-    },
-
-    {
-      name: "USD",
-      icon: USD_COIN,
-      balance: 58764.64,
-      accountNumber: "1JunQ*****1Q2N",
-    },
-  ];
 
   return (
     <Fragment>

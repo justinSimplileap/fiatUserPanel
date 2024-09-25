@@ -14,7 +14,7 @@ import {
 } from "../../service/ApiRequests";
 import toast from "react-hot-toast";
 import localStorageService from "../../service/LocalstorageService";
-import { Modal } from "@mui/material";
+import { Divider, Modal } from "@mui/material";
 import ChangePassword from "./ChangePassword";
 import TwoFactorAuthentication from "./TwoFactorAuthentication";
 import useGlobalStore from "~/store/useGlobalStore";
@@ -26,7 +26,8 @@ import {
 } from "../../service/api/pricelists";
 import LoaderIcon from "../LoaderIcon";
 import TransfersIcon from "../../assets/general/any-transfer.svg";
-import { dateValidation } from "~/helpers/helper";
+import { cards, dateValidation } from "~/helpers/helper";
+import MuiButton from "../MuiButton";
 
 interface Form {
   currentPassword?: string;
@@ -213,213 +214,220 @@ const Profile = () => {
   return (
     <Fragment>
       <ChangeAuth open={open} handleClose={() => setOpen("")} />
-      <div className="m-auto mb-8 mt-8  grid w-[95%] grid-cols-1 gap-5 md:grid-cols-2 md:gap-10">
-        <div className="">
-          <div className="flex items-center gap-4">
-            <div className="aspect-square w-24 rounded-full border-[3px] border-[#C1922E]">
+
+      <div className="m-auto w-full gap-10 lg:flex lg:w-[95%]">
+        {/* Left Section */}
+        <div className="relative mt-4 w-full rounded-md bg-white p-6 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)] xl:w-[40%]">
+          {/* Profile Section */}
+          <div>
+            <div className="m-auto aspect-square w-24 rounded-full border-[3px]">
               <Image
-                alt={"Profile"}
+                alt="Profile"
                 className="aspect-square w-full rounded-full object-cover"
                 src={
                   profileImgLink
                     ? `${profileImgLink}?t=${new Date().getTime()}`
                     : DefaultProfile
                 }
-                width={"100"}
-                height={"100"}
+                width="100"
+                height="100"
               />
             </div>
-            <div>
-              <p className=" text-2xl font-bold">{fullname}</p>
+            <div className="mt-4 text-center">
+              <p className="text-2xl font-bold">{fullname}</p>
             </div>
-          </div>
 
-          {/* Profile photo  */}
-          <div className="mt-16 flex items-start justify-between border-b-2 border-[#D9D9D9] pb-6">
-            <div>
-              <div className="flex items-center gap-2">
-                <Image
-                  src={ProfileCompleted as StaticImageData}
-                  alt="Profile completed"
-                />
+            {/* Profile Photo */}
+            <div className="mt-10 flex items-center justify-between border-b-2 border-[#D9D9D9] pb-6">
+              <div>
                 <p className="text-base font-bold">Profile photo</p>
-              </div>
-              <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
-                Please upload a profile picture
-              </p>
-            </div>
-            <div className="cursor-pointer">
-              <input
-                ref={fileInputRef}
-                onChange={(e: any) => {
-                  submitProfilePic(e.target.files[0]);
-                }}
-                type="file"
-                accept="image/*"
-                className=" hidden"
-              />
-              <Button
-                type="button"
-                className="ml-auto rounded-md bg-blue-500 px-3 py-2 text-white hover:bg-blue-800 lg:px-10"
-                title="Change"
-                loading={loading}
-                onClick={() => {
-                  fileInputRef.current.click();
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Email Authentication */}
-          <div className="mt-6 flex items-start justify-between border-b-2 border-[#D9D9D9] pb-6">
-            <div className="w-4/5">
-              <div className="flex items-center gap-2">
-                <Image
-                  src={ProfileCompleted as StaticImageData}
-                  alt="Profile completed"
-                />
-                <p className="text-base font-bold">Email Authentication</p>
-              </div>
-              <p className="mt-2 text-xs font-bold">{email}</p>
-              <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
-                For login, withdrawal, password retrieval, security settings
-                changes and API management verification.
-                {/* <span className=" text-[#217EFD]">Unlink here</span> */}
-              </p>
-            </div>
-            <Button
-              onClick={() => {
-                handleOpen("email");
-              }}
-              type="submit"
-              className="ml-auto rounded-md bg-blue-500 px-3 py-2 text-white hover:bg-blue-800 lg:px-10"
-              title="Change"
-            />
-          </div>
-          {/* SMS authentication */}
-          <div className="mt-6 flex items-start justify-between border-b-2 border-[#D9D9D9] pb-6">
-            <div className="w-4/5">
-              <div className="flex gap-2">
-                <Image
-                  src={ProfileCompleted as StaticImageData}
-                  alt="Profile completed"
-                />
-                <p className="text-base font-bold">SMS authentication</p>
-              </div>
-              <p className="mt-2 text-xs font-bold">{`${countryCode ?? ""} ${
-                phone ?? ""
-              }`}</p>
-              <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
-                For login, withdrawal, password reset and change of security
-                settings
-              </p>
-            </div>
-            <Button
-              onClick={() => {
-                handleOpen("sms");
-              }}
-              type="submit"
-              className="ml-auto rounded-md bg-blue-500 px-3 py-2 text-white hover:bg-blue-800 lg:px-10"
-              title="Change"
-            />
-          </div>
-
-          {/* Identity verification */}
-          <div className="mt-6 flex items-start justify-between border-b-2 border-[#D9D9D9] pb-6">
-            <div className="w-4/5">
-              <div className="flex gap-2">
-                <Image
-                  src={ProfileCompleted as StaticImageData}
-                  alt="Profile completed"
-                />
-                <p className="text-base font-bold">Identity verification</p>
-              </div>
-
-              <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
-                Complete verification to increase daily withdrawal limit
-              </p>
-            </div>
-            <Button
-              type="submit"
-              className={`ml-auto rounded-md ${findColorCode(
-                isUserVerified,
-              )} pointer-events-none px-3 py-2 text-white lg:px-10`}
-              title={isUserVerified}
-            />
-          </div>
-
-          {/* Password */}
-          <div className="mt-6 flex items-start justify-between border-b-2 border-[#D9D9D9] pb-6">
-            <div className="w-4/5">
-              <div className="flex gap-2">
-                <Image
-                  src={ProfileCompleted as StaticImageData}
-                  alt="Profile completed"
-                />
-                <p className="text-base font-bold">Password</p>
-              </div>
-
-              <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
-                Change password in settings
-              </p>
-            </div>
-            <Button
-              type="submit"
-              className="ml-auto rounded-md bg-blue-500  px-3 py-2 text-white hover:bg-blue-800 lg:px-10"
-              title="Change"
-              onClick={() => setChangePasswordModal(true)}
-            />
-          </div>
-
-          {/* Google authenticator */}
-          <div className="mt-6 flex items-start justify-between border-b-2 border-[#D9D9D9] pb-6">
-            <div className="w-4/5">
-              <div className="flex gap-2">
-                <Image
-                  src={ProfileCompleted as StaticImageData}
-                  alt="Profile completed"
-                />
-                <p className="text-base font-bold">Google authenticator</p>
-              </div>
-
-              <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
-                Change password in settings
-              </p>
-            </div>
-            <Button
-              type="submit"
-              className="ml-auto rounded-md bg-blue-500 px-3 py-2 text-white hover:bg-blue-800 lg:px-10"
-              title={tfaEnabled || otpValidated ? "Verified" : "Enable"}
-              onClick={() => get2FAQR()}
-              disabled={tfaEnabled || otpValidated}
-              loading={loading}
-            />
-          </div>
-          {/* End */}
-        </div>
-        <div className="flex flex-col gap-4">
-          <div className="">
-            <div className="mb-6 flex justify-between">
-              <p className="text-base font-bold">Fees</p>
-              {/* <p className="text-sm font-bold text-[#217EFD]">Outgoing</p> */}
-            </div>
-
-            {transferFees.map((item) => (
-              <div className="mt-4 flex justify-between" key={item.id}>
-                <div className="flex gap-2 ">
-                  <Image src={TransfersIcon} alt="transfer logo" />
-                  <span className="mt-1">
-                    {oprationName(item?.operationType)} ({item.currencyId})
-                  </span>
-                </div>
-                <p className="mt-1">
-                  {item.percent}% + {item.fixedFee} {item.currencyId}
+                <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
+                  Please upload a profile picture
                 </p>
+              </div>
+              <div className="cursor-pointer">
+                <input
+                  ref={fileInputRef}
+                  onChange={(e: any) => {
+                    submitProfilePic(e.target.files[0]);
+                  }}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                />
+                <MuiButton
+                  name="Change"
+                  type="button"
+                  background="white"
+                  color="#C2912E"
+                  loading={loading}
+                  onClick={() => fileInputRef.current.click()}
+                />
+              </div>
+            </div>
+
+            {/* Email Authentication */}
+            <div className="mt-6 flex items-center justify-between border-b-2 border-[#D9D9D9] pb-6">
+              <div className="w-4/5">
+                <p className="text-base font-bold">Email Authentication</p>
+                <p className="mt-2 text-xs font-bold">{"Justin@yopmail.com"}</p>
+                <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
+                  For login, withdrawal, password retrieval, security settings
+                  changes and API management verification. You can{" "}
+                  <span className="cursor-pointer text-[#C2912E]">
+                    Unlink here
+                  </span>
+                </p>
+              </div>
+              <MuiButton
+                background="white"
+                color="#C2912E"
+                onClick={() => handleOpen("email")}
+                type="submit"
+                name="Change"
+              />
+            </div>
+
+            {/* SMS Authentication */}
+            <div className="mt-6 flex items-center justify-between border-b-2 border-[#D9D9D9] pb-6">
+              <div className="w-4/5">
+                <p className="text-base font-bold">SMS authentication</p>
+                <p className="mt-2 text-xs font-bold">{`${countryCode ?? ""} ${
+                  phone ?? "+91 9877878778"
+                }`}</p>
+                <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
+                  For login, withdrawal, password reset and change of security
+                  settings
+                </p>
+              </div>
+              <MuiButton
+                background="white"
+                color="#C2912E"
+                onClick={() => handleOpen("sms")}
+                type="submit"
+                name="Change"
+              />
+            </div>
+
+            {/* Identity Verification */}
+            <div className="mt-6 flex items-center justify-between border-b-2 border-[#D9D9D9] pb-6">
+              <div className="w-4/5">
+                <p className="text-base font-bold">Identity verification</p>
+                <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
+                  Complete verification to increase daily withdrawal count
+                </p>
+              </div>
+              <MuiButton
+                type="submit"
+                borderColor="#F9E3B8BD"
+                background="#F9E3B8BD"
+                color="black"
+                name={
+                  isUserVerified === "APPROVED" ? "Approved" : isUserVerified
+                }
+              />
+            </div>
+
+            {/* Password */}
+            <div className="mt-6 flex items-center justify-between border-b-2 border-[#D9D9D9] pb-6">
+              <div className="w-4/5">
+                <p className="text-base font-bold">Password</p>
+                <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
+                  Change password in settings
+                </p>
+              </div>
+              <MuiButton
+                background="white"
+                color="#C2912E"
+                onClick={() => setChangePasswordModal(true)}
+                type="submit"
+                name="Change"
+              />
+            </div>
+
+            {/* Google Authenticator */}
+            <div className="mt-6 flex items-center justify-between border-b-2 border-[#D9D9D9] pb-6">
+              <div className="w-4/5">
+                <p className="text-base font-bold">Google authenticator</p>
+                <p className="mt-2 text-xs font-semibold text-[#99B2C6]">
+                  Change password in settings
+                </p>
+              </div>
+              <MuiButton
+                type="submit"
+                name={tfaEnabled || otpValidated ? "Verified" : "Enable"}
+                onClick={() => get2FAQR()}
+                disabled={tfaEnabled || otpValidated}
+                loading={loading}
+                borderColor="#F9E3B8BD"
+                background="#F9E3B8BD"
+                color="black"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Right Section */}
+        <div className="mt-4 flex w-full flex-col gap-10  xl:w-[60%]">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
+            {cards.map((item, i) => (
+              <div
+                key={i}
+                className=" w-full text-ellipsis  break-all rounded-md bg-white p-6 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)]"
+              >
+                <div className="my-2 flex items-center gap-2">
+                  <Image src={item.icon} alt="" /> <p>{item.name}</p>
+                </div>
+                <span className="text-gray-500">Virtual Account Name</span>
+                <p className=" font-semibold">{item.accountName}</p>
+                <div className="m-1"></div>
+                <span className="text-gray-500">BIC</span>
+                <p className="font-semibold">{item.bic}</p>
+                <div className="m-1"></div>
+                <span className="text-gray-500">vIBAN</span>
+                <p className="font-semibold ">{item.vIBAN}</p>
+                <div className="m-1"></div>
+
+                <span className="text-gray-500">Bank Name</span>
+                <p className="font-semibold">{item.bankName}</p>
+                <div className="m-1"></div>
+
+                <span className="text-gray-500">Bank Address</span>
+                <p className="font-semibold">{item.bankAddress}</p>
+                <div className="m-1"></div>
+
+                <span className="text-gray-500">Bank Country</span>
+                <p className="font-semibold">{item.country}</p>
               </div>
             ))}
           </div>
+          <div className="relative w-full rounded-md bg-white p-6 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)]">
+            <div className="w-full">
+              <div className="mb-6 flex justify-between">
+                <p className="text-base font-bold">Fees</p>
+              </div>
+
+              <Divider />
+
+              {transferFees.map((item) => (
+                <div className="mt-4 flex justify-between" key={item.id}>
+                  <div className="flex gap-2">
+                    <Image src={TransfersIcon} alt="transfer logo" />
+                    <span className="mt-1">
+                      {oprationName(item?.operationType)} ({item.currencyId})
+                    </span>
+                  </div>
+                  <p className="mt-1">
+                    {item.percent}% + {item.fixedFee} {item.currencyId}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
+
+      {/* Modals */}
       <Modal open={changePasswordModal}>
         <div className="flex h-screen items-center justify-center">
           <div className="w-full max-w-2xl rounded bg-white p-10 shadow-md">
@@ -431,6 +439,7 @@ const Profile = () => {
           </div>
         </div>
       </Modal>
+
       <Modal open={twofaModal}>
         <div className="flex h-screen items-center justify-center">
           <div className="mx-2 rounded bg-white p-8 shadow-md md:max-w-md">
