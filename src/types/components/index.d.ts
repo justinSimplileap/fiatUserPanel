@@ -35,6 +35,19 @@ interface CSVTransactions extends CommonKeys {
 }
 
 interface CryptoWithdrawalForm {
+  bankcountry: any;
+  Banklocation: any;
+  Bankaddress: any;
+  Bankname: any;
+  swiftBic: any;
+  Description: any;
+  Reference: any;
+  Country: any;
+  Customercity: any;
+  Zipcode: any;
+  paymentSystem: any;
+  customerAddress: string;
+  from: any;
   assetId: string;
   amount: string;
   addressType: "ONETIME" | "WHITELIST";

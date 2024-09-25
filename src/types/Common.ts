@@ -49,6 +49,12 @@ interface reportHeaderval {
   FEE: string;
   BALANCE: string;
 }
+interface cryptoHeaderval {
+ "File Name": string;
+  "File Size": string;
+  "Date": string;
+  "Action": string;
+};
 
 interface displayFilterType {
   label: string;
@@ -68,6 +74,13 @@ type RowData = {
   balance: string;
 };
 
+type CryptoRowData = {
+  fileName: string;
+  fileSize: string;
+  date: string;
+  action: string;
+};
+
 export type {
   CountryListType,
   RowData,
@@ -75,4 +88,6 @@ export type {
   DropDownOptionsResponseType,
   reportHeaderval,
   displayFilterType,
+  cryptoHeaderval,
+  CryptoRowData
 };

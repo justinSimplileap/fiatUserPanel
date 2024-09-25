@@ -2,7 +2,7 @@ import Router from "next/router";
 import useGlobalStore from "~/store/useGlobalStore";
 import CryptoJS from "crypto-js";
 import localStorageService from "~/service/LocalstorageService";
-import { displayFilterType, RowData } from "~/types/Common";
+import { CryptoRowData, displayFilterType, RowData } from "~/types/Common";
 import EURO_COIN from "../assets/currency/EURO_COIN.svg";
 import GBP_COIN from "../assets/currency/GBP_COIN.svg";
 import USD_COIN from "../assets/currency/USD_COIN.svg";
@@ -508,6 +508,45 @@ export const cards = [
     bankName: "EUbank",
     bankAddress: "24, Williams street, London",
     country: "United Kingdom",
+  },
+];
+
+export const cryptoDummyData: CryptoRowData[] = [
+  {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
+  }, {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
+  }, {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
+  }, {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
+  }, {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
+  }, {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
+  }, {
+    fileName: "Document1.docx",
+    fileSize: "28.50 KB",
+    date: "16/11/2022",
+    action: "",
   },
 ];
 

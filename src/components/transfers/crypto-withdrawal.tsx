@@ -53,23 +53,32 @@ import {
 import localStorageService from "~/service/LocalstorageService";
 import Button from "../common/Button";
 import { getTransferFeesByPricelistId } from "~/service/api/pricelists";
+import CryptoTable from "./crypto-table";
 
 const WithdrawalInit: CryptoWithdrawalForm = {
   assetId: "",
+  from: "",
   amount: "",
+  paymentSystem: "",
+  IBAN: "",
+  customerName: "",
+  customerAddress: "",
+  Zipcode: "",
+  Customercity: "",
+  Country: "",
+  Reference: "",
+  Description: "",
+  swiftBic: "",
+  Bankname: "",
+  Bankaddress: "",
+  Banklocation: "",
+  bankcountry: "",
+  isApproved: false,
   addressType: "ONETIME",
-  oneTimeAddress: "",
-  whitelistId: "",
   description: "",
   reference: "",
   isMax: false,
-  IBAN: "",
-  customerName: "",
-  address: "",
-  zipCode: "",
-  city: "",
   countryOfIssue: "",
-  swift: "",
   bankName: "",
   bankAddress: "",
   bankLocation: "",
@@ -77,8 +86,7 @@ const WithdrawalInit: CryptoWithdrawalForm = {
   transferFee: "",
   paymentSystemType: "",
   customerZipcode: "",
-  euroTemplate: "",
-  isApproved: false,
+  euroTemplate: ""
 };
 
 const FeeInit: CalculatedFee = {
@@ -238,27 +246,6 @@ const CryptoWithdrawal = () => {
 
   const isTemplateSelected = watch("euroTemplate");
 
-  useEffect(() => {
-    const selectedTemplate = euroTemplates?.find(
-      (item) => item.templateName === template,
-    );
-
-    setValue("IBAN", selectedTemplate?.IBAN ?? "");
-    setValue("customerName", selectedTemplate?.customerName ?? "");
-    setValue("address", selectedTemplate?.customerAddress ?? "");
-    setValue("customerZipcode", selectedTemplate?.customerZipcode ?? "");
-    setValue("city", selectedTemplate?.customerCity ?? "");
-    setValue("countryOfIssue", selectedTemplate?.customerCountry ?? "");
-    setValue("swift", selectedTemplate?.swift ?? "");
-    setValue("bankName", selectedTemplate?.bankName ?? "");
-    setValue("bankAddress", selectedTemplate?.bankAddress ?? "");
-    setValue("bankLocation", selectedTemplate?.bankLocation ?? "");
-    setValue("bankCountry", selectedTemplate?.bankCountry ?? "");
-    setValue("description", selectedTemplate?.description ?? "");
-    setValue("reference", selectedTemplate?.reference ?? "");
-    setValue("isApproved", selectedTemplate?.isApproved ?? false);
-  }, [template]);
-
   const selectedWhiteList = useWatch({
     control,
     name: "whitelistId",
@@ -330,10 +317,10 @@ const CryptoWithdrawal = () => {
       if (data.result[changeName(pair2)]) {
         return data.result[changeName(pair2)]?.a[0];
       }
-    } catch (error) {}
+    } catch (error) { }
   };
 
-  const onSubmit = async (data: CryptoWithdrawalForm) => {
+  const onSubmit = (data: CryptoWithdrawalForm) => {
     if (selectedAsset === "EUR" && !isTemplateSelected) {
       void handleSaveTemplate();
     } else {
@@ -345,162 +332,30 @@ const CryptoWithdrawal = () => {
         maximumFee: "",
       };
 
-      let euroData: EuroMail = {
-        IBAN: data?.IBAN ?? "",
-        customerName: data?.customerName ?? "",
-        customerAddress: data?.address ?? "",
-        customerZipcode: data?.customerZipcode ?? "",
-        customerCity: data?.city ?? "",
-        customerCountry: data?.countryOfIssue,
-        swift: data?.swift ?? "",
-        bankName: data?.bankName,
-        bankAddress: data?.bankAddress,
-        bankLocation: data?.bankLocation,
-        bankCountry: data?.bankCountry,
-        paymentSystemType: data?.paymentSystemType,
-        reference: data?.reference,
-        isApproved: data?.isApproved,
-        //
+      const euroData: EuroMail = {
+        assetId: data?.assetId,
+        from: data?.from,
         amount: data?.amount,
-        description: data?.description,
-        userId: dashboard?.azureId,
-        firstname: dashboard?.firstname,
-        lastname: dashboard?.lastname,
-        id: dashboard?.id ? dashboard?.id : 0,
-        currency: selectedAsset,
-        transferFee: data?.transferFee ?? "--",
+        paymentSystem: data?.paymentSystem,
+        IBAN: data?.IBAN,
+        customerName: data?.customerName,
+        customerAddress: data?.customerAddress,
+        Zipcode: data?.Zipcode,
+        Customercity: data?.Customercity,
+        Country: data?.Country,
+        Reference: data?.Reference,
+        Description: data?.Description,
+        swiftBic: data?.swiftBic,
+        Bankname: data?.Bankname,
+        Bankaddress: data?.Bankaddress,
+        Banklocation: data?.Banklocation,
+        bankcountry: data?.bankcountry,
+        isApproved: data?.isApproved,
       };
 
-      const selectedTemplate = euroTemplates?.find(
-        (item) => item.templateName === template,
-      );
-
-      if (selectedTemplate) {
-        euroData = { ...euroData, templateId: selectedTemplate.id };
-      }
-
       setEuroTrasaction(euroData);
-
-      const euroValue = await fetchLimitsPair(selectedAsset);
-
-      const limitValue =
-        selectedAsset === "EUR"
-          ? Number(data.amount ?? 0)
-          : Number(data.amount ?? 0) * Number(euroValue ?? 0);
-
-      const errorConditionBuy = limits?.some((item) => {
-        if (
-          (item.currencyId === selectedAsset || item.currencyId === "ANY") &&
-          item.exchangeType === "WITHDRAWAL" &&
-          item.exchangeLimit === "MIN"
-        ) {
-          return limitValue <= Number(item.amount);
-        } else if (
-          (item.currencyId === selectedAsset || item.currencyId === "ANY") &&
-          item.exchangeType === "WITHDRAWAL" &&
-          item.exchangeLimit === "MAX"
-        ) {
-          return limitValue >= Number(item.amount);
-        } else {
-          return false;
-        }
-      });
-
-      if (errorConditionBuy) {
-        setOpen("otcPopup");
-        // SendOTCPopup();
-        // setOpen("otcPopupOne");
-      } else {
-        try {
-          if (selectedAsset === "EUR") {
-            setPopupState("2FA");
-          } else {
-            const response = await fetchTransaferFees(data?.assetId);
-            const minimumFee = Number(response?.minimumFee);
-            const maximumFee = Number(response?.maximumFee);
-
-            const calculatedFee =
-              Number(data?.amount) * (response?.percent / 100) +
-              Number(response?.fixedfee);
-
-            let finalFee;
-
-            if (
-              minimumFee !== null &&
-              minimumFee !== 0 &&
-              calculatedFee < minimumFee
-            ) {
-              finalFee = minimumFee;
-            } else if (
-              maximumFee !== null &&
-              maximumFee !== 0 &&
-              calculatedFee > maximumFee
-            ) {
-              finalFee = maximumFee;
-            } else {
-              finalFee = calculatedFee;
-            }
-
-            feeData.net = parseFloat(data?.amount) - finalFee;
-            feeData.fee = finalFee;
-
-            if (feeData.net < 0) {
-              toast.error("Amount is too low");
-              return false;
-            }
-
-            if (feeData.net === 0) {
-              toast.error("Amount is too low");
-              return false;
-            }
-
-            if (response?.status) {
-              setTrasaction({ data, fee: feeData });
-              setPopupState("CONFIRM");
-            }
-          }
-        } catch (error) {
-          // Handle the error if needed
-        }
-      }
     }
   };
-
-  useEffect(() => {
-    const fetchTransferFees = async () => {
-      const response = await fetchTransaferFees(selectedAsset);
-
-      const minimumFee = Number(response?.minimumFee);
-      const maximumFee = Number(response?.maximumFee);
-
-      const calculatedFee =
-        Number(amount) * (response?.percent / 100) + Number(response?.fixedfee);
-
-      let finalFee;
-
-      if (
-        minimumFee !== null &&
-        minimumFee !== 0 &&
-        calculatedFee < minimumFee
-      ) {
-        finalFee = minimumFee;
-      } else if (
-        maximumFee !== null &&
-        maximumFee !== 0 &&
-        calculatedFee > maximumFee
-      ) {
-        finalFee = maximumFee;
-      } else {
-        finalFee = calculatedFee;
-      }
-
-      setValue("transferFee", finalFee.toString());
-    };
-
-    fetchTransferFees();
-  }, [amount]);
-
-  const paymentSystemList = [{ value: "SEPA", label: "SEPA" }];
 
   const on2FASubmit = async () => {
     if (selectedAsset === "EUR") {
@@ -516,11 +371,11 @@ const CryptoWithdrawal = () => {
         oneTimeAddress:
           transaction.data.addressType === "WHITELIST"
             ? whitelistOptions.find(
-                (item) => item.id === transaction.data.whitelistId,
-              )?.assetAddress
+              (item) => item.id === transaction.data.whitelistId,
+            )?.assetAddress
             : transaction.data.addressType === "ONETIME"
-            ? transaction.data.oneTimeAddress
-            : "",
+              ? transaction.data.oneTimeAddress
+              : "",
         description: transaction?.data?.description,
         transactionFee: transaction?.fee?.fee,
       };
@@ -540,58 +395,9 @@ const CryptoWithdrawal = () => {
     }
   };
 
-  function SendOTCPopup() {
-    const date = JSON.parse(JSON.stringify(new Date()));
-
-    const transactionData: TransactionConfirmData = {
-      clientName: dashboard?.firstname,
-      contactPerson: dashboard?.lastname,
-      date: formatDate(date),
-      fromCurrency: selectedAsset,
-      amount: amount,
-      accountNumber: watch("oneTimeAddress") ?? "",
-    };
-
-    // const matchingAsset = dashboard.assets.find(
-    //   (asset) => asset.assetId === selectedAsset,
-    // );
-
-    // if (matchingAsset) {
-    //   transactionData.accountNumber = matchingAsset.assetAddress;
-    // }
-
-    setOtcConfirmData(transactionData);
-  }
-
   const assetValue = filteredAssets?.find(
     (item) => item.fireblockAssetId === assetId,
   );
-
-  async function SendOTCMail() {
-    const date = JSON.parse(JSON.stringify(new Date()));
-
-    const transactionData: TransactionConfirmData = {
-      clientName: dashboard?.firstname,
-      contactPerson: dashboard?.lastname,
-      date: formatDate(date),
-      fromCurrency: selectedAsset,
-      amount: amount,
-      accountNumber:
-        watch("addressType") === "WHITELIST"
-          ? whitelistOptions.find((item) => item.id === watch("whitelistId"))
-              ?.assetAddress
-          : watch("addressType") === "ONETIME"
-          ? watch("oneTimeAddress")
-          : "",
-    };
-
-    const [data, error] = await ApiHandler(SendOTCTradeMail, transactionData);
-    if (data?.success) {
-      toast.success("Mail sent Successfully");
-      setOpen("");
-    }
-  }
-
   const LabelName = ({ name, label }: any) => {
     return (
       <label htmlFor={name} className="subText my-1 block">
@@ -600,253 +406,40 @@ const CryptoWithdrawal = () => {
     );
   };
 
-  async function handleSaveTemplate() {
+   function handleSaveTemplate() {
     const euroTemplate = {
-      templateName: watch("customerName"),
+      assetId: watch("assetId"),
+      from: watch("from"),
+      amount: watch("amount"),
+      paymentSystem: watch("paymentSystem"),
       IBAN: watch("IBAN"),
       customerName: watch("customerName"),
-      customerAddress: watch("address"),
-      customerZipcode: watch("customerZipcode"),
-      customerCity: watch("city"),
-      customerCountry: watch("countryOfIssue"),
-      swift: watch("swift"),
-      bankName: watch("bankName"),
-      bankAddress: watch("bankAddress"),
-      bankLocation: watch("bankLocation"),
-      bankCountry: watch("bankCountry"),
-      description: watch("description"),
-      reference: watch("reference"),
+      customerAddress: watch("customerAddress"),
+      Zipcode: watch("Zipcode"),
+      Customercity: watch("Customercity"),
+      Country: watch("Country"),
+      Reference: watch("Reference"),
+      Description: watch("Description"),
+      swiftBic: watch("swiftBic"),
+      Bankname: watch("Bankname"),
+      Bankaddress: watch("Bankaddress"),
+      Banklocation: watch("Banklocation"),
+      bankcountry: watch("bankcountry"),
     };
-
-    // const allFieldsFilled = Object.values(euroTemplate).every(
-    //   (value) => value !== undefined && value !== "",
-    // );
-
-    const existTemplateName = euroTemplates?.filter(
-      (item) => item.templateName === watch("customerName"),
-    );
-
-    if (existTemplateName && existTemplateName?.length > 0) {
-      toast.error("Template already exists");
-    } else {
-      const [res, error] = await ApiHandler(saveEuroTemplate, euroTemplate);
-
-      if (res?.success) {
-        toast.success(
-          "Template Saved Successfully, You can start transfer once the template is approved by Admin.",
-        );
-        fetchTemplates();
-        reset();
-        setValue("assetId", "EUR");
-      }
-    }
   }
 
   return (
     <div>
-      <Dialog
-        open={open === "EURO"}
-        onClose={() => {
-          setOpen("");
-        }}
-      >
-        <div className="p-5">
-          <div className="flex justify-between border-b-2 border-[#DFDDDD] pb-4">
-            <p className=" m-auto text-sm font-bold sm:text-base lg:text-lg">
-              Your Euro withdrawal is being processed.
-            </p>
-            <button
-              onClick={() => {
-                setOpen("");
-              }}
-            >
-              <div>
-                <Image src={Close as StaticImageData} alt="Close" />
-              </div>
-            </button>
-          </div>
-
-          <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              You withdrawal request has been submitted. The processing time
-              varies depending on your registered withdwal bank and local
-              network status.
-            </DialogContentText>
-          </DialogContent>
-
-          <Box className="flex justify-end">
-            <MuiButton
-              name="Confirm"
-              onClick={() => {
-                setOpen("");
-                reset();
-                setValue("assetId", "EUR");
-              }}
-            ></MuiButton>
-          </Box>
-        </div>
-      </Dialog>
-
-      {/* otc confirm popup  */}
-      <Dialog
-        open={open === "otcPopupOne"}
-        onClose={() => {
-          setOpen("");
-        }}
-        maxWidth={"sm"}
-        fullWidth
-      >
-        <div className=" rounded p-4">
-          <div>
-            <div className="flex justify-between">
-              <p className="w-full pb-2 text-center text-sm font-bold sm:text-base lg:text-lg">
-                OTC Order Form
-              </p>
-              <button
-                onClick={() => {
-                  setOpen("");
-                }}
-              >
-                <div>
-                  <Image src={Close as StaticImageData} alt="Close" />
-                </div>
-              </button>
-            </div>
-            <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-              <p>
-                You are now accessing our OTC Trading desk for exclusive and
-                personalized services tailored to facilitate large transactions.
-              </p>
-            </div>
-            <div className="">
-              <p className=" mt-4 text-xs font-bold text-[#99B2C6]">
-                ORDER DETAILS
-              </p>
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p>Client Name </p>
-                <p>{otcConfirmData?.clientName}</p>
-              </div>
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p>Contact Person</p>
-                <p>{otcConfirmData?.contactPerson}</p>
-              </div>
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p>Account Number</p>
-                <p>{otcConfirmData?.accountNumber}</p>
-              </div>
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p>Date</p>
-                <p>{otcConfirmData?.date}</p>
-              </div>
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p>From Currency</p>
-                <p>{otcConfirmData?.fromCurrency}</p>
-              </div>
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p>Amount</p>
-                <p>{otcConfirmData?.amount}</p>
-              </div>
-            </div>
-
-            <div className="mt-4 flex items-center justify-end gap-6 ">
-              <button
-                className=" cursor-pointer text-sm"
-                onClick={() => {
-                  setOpen("");
-                }}
-              >
-                Cancel
-              </button>
-              <MuiButton
-                name="Continue"
-                className="px-8 py-3"
-                onClick={() => {
-                  setOpen("otcPopup");
-                }}
-              ></MuiButton>
-            </div>
-          </div>
-        </div>
-      </Dialog>
-
-      {/* otc last popup  */}
-      <Dialog
-        open={open === "otcPopup"}
-        onClose={() => {
-          setOpen("");
-        }}
-        maxWidth={"sm"}
-        fullWidth
-      >
-        <div className=" rounded p-4">
-          <div>
-            <div className="flex justify-between pb-4">
-              <p className=" m-auto text-sm font-bold sm:text-base lg:text-lg">
-                Confirm your Order
-              </p>
-              <button
-                onClick={() => {
-                  setOpen("");
-                }}
-              >
-                <div>
-                  <Image src={Close as StaticImageData} alt="Close" />
-                </div>
-              </button>
-            </div>
-            <div className="">
-              <div className=" flex justify-between border-b border-[#DFDDDD] py-4 text-xs sm:text-sm lg:text-base">
-                <p className="">
-                  Please note your order will be sent to OTC desk
-                </p>
-              </div>
-            </div>
-            <div className="mt-4 flex items-center justify-end gap-6 ">
-              <button
-                className=" cursor-pointer text-sm"
-                onClick={() => {
-                  setOpen("");
-                }}
-              >
-                Cancel
-              </button>
-              <MuiButton
-                name={"Confirm"}
-                className="px-8 py-3"
-                onClick={() => {
-                  SendOTCMail();
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </Dialog>
-
       <div className="">
-        {!tfaEnabled && (
-          <WarningMsg
-            element={<span>Please enable two factor authentication</span>}
-            handleClickText={"Enable Now"}
-            handleClick={() => {
-              void Router.push("/app/profile");
-            }}
-          />
-        )}
-        <p className="my-4 text-center text-base font-semibold">
+        <p className="mt-8 mb-3 text-center text-base font-semibold">
           CREATE A NEW TRANSFER
         </p>
-
         <form onSubmit={handleSubmit(onSubmit)}>
-          {/* <p className=" border-b-2 pb-2">Enter the basic details</p> */}
           <div className="flex flex-col justify-center gap-4 md:flex-row">
-            <div
-              className={`${
-                selectedAsset === "EUR" ? ` w-full md:w-[34%]` : ` w-full`
-              } max-w-xl `}
-            >
-              <div className="flex flex-col gap-2 rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] ">
-                <div>
-                  {/* <LabelName name={assetId} label={"From"} /> */}
+            <div className={`${`w-full md:w-[34%]`} max-w-xl `}>
+              <div className="flex flex-col gap-2 rounded bg-white p-6 pb-16 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] ">
+                <div className="border-b-2 pb-4 flex content-between items-center ">
+                  <p className="font-bold me-5">Basic Details</p>
                   <Controller
                     control={control}
                     name="assetId"
@@ -859,7 +452,8 @@ const CryptoWithdrawal = () => {
                     }) => (
                       <Fragment>
                         <Autocomplete
-                          size="small"
+                          size="medium"
+                          className="w-[70%] "
                           options={filteredAssets}
                           onChange={(_, nextValue) => {
                             onChange(nextValue?.fireblockAssetId ?? ""),
@@ -887,6 +481,231 @@ const CryptoWithdrawal = () => {
                             <TextField
                               className=" flex items-center gap-2 bg-[#ffffff] "
                               {...params}
+                              placeholder="Select Templates"
+                              InputProps={{
+                                ...params.InputProps,
+                                startAdornment: (() => {
+                                  return (
+                                    <Fragment>
+                                      {assetValue && (
+                                        <Image
+                                          className="ml-2 h-5 w-4"
+                                          src={assetValue?.icon ?? ""}
+                                          alt={assetValue?.name}
+                                          width={80}
+                                          height={80}
+                                        />
+                                      )}
+                                    </Fragment>
+                                  );
+                                })(),
+                              }}
+                              variant="outlined"
+                            />
+                          )}
+                        />
+                        <p className="text-sm text-red-500">{error?.message}</p>
+                      </Fragment>
+                    )}
+                  />
+                </div>
+                <div className="mt-3">
+                  <Controller
+                    control={control}
+                    name="from"
+                    rules={{
+                      required: "Please select from",
+                    }}
+                    render={({
+                      field: { value, onChange },
+                      fieldState: { error },
+                    }) => (
+                      <Fragment>
+                        {/* Label outside the input field */}
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                          From
+                        </label>
+
+                        <Autocomplete
+                          size="medium"
+                          options={filteredAssets}
+                          onChange={(_, nextValue) => {
+                            onChange(nextValue?.fireblockAssetId ?? ""),
+                              setValue("whitelistId", "");
+                          }}
+                          value={assetValue ? assetValue : null}
+                          getOptionLabel={(option) => {
+                            return option.name ? option.name : value;
+                          }}
+                          renderOption={(props, option) => (
+                            <li
+                              {...props}
+                              className="flex cursor-pointer items-center gap-2 p-2"
+                            >
+                              <Image
+                                src={option.icon ?? ""}
+                                alt={option.name}
+                                width={30}
+                                height={30}
+                              />
+                              {option.name}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              className="flex items-center gap-2 bg-[#ffffff]"
+                              {...params}
+                              InputProps={{
+                                ...params.InputProps,
+                                startAdornment: (() => {
+                                  return (
+                                    <Fragment>
+                                      {assetValue && (
+                                        <Image
+                                          className="ml-2 h-5 w-4"
+                                          src={assetValue?.icon ?? ""}
+                                          alt={assetValue?.name}
+                                          width={80}
+                                          height={80}
+                                        />
+                                      )}
+                                    </Fragment>
+                                  );
+                                })(),
+                              }}
+                              variant="outlined"
+                            />
+                          )}
+                        />
+                        <p className="text-sm text-red-500">
+                          {error?.message}
+                        </p>
+                      </Fragment>
+                    )}
+                  />
+                </div>
+
+                <div>
+                  <div className=" mt-3">
+                    <Controller
+                      name="amount"
+                      control={control}
+                      rules={{
+                        required: "Please enter the amount",
+                        max: {
+                          value: assetBalance?.balance ?? 0,
+                          message: "Amount cannot be more than balance",
+                        },
+                        validate: (amount) =>
+                          parseFloat(amount) > 0
+                            ? undefined
+                            : "Amount cannot be zero or less than zero",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <label className="mb-2 block text-sm font-medium text-gray-700">
+                            Amount
+                          </label>
+                          <TextField
+                            type="number"
+                            onWheel={() =>
+                              (
+                                document?.activeElement as HTMLInputElement
+                              )?.blur()
+                            }
+                            size="medium"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                            disabled={isMax}
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                  <div className="ml-1 mt-4 flex w-fit items-center gap-2">
+                    <input
+                      {...register("isMax", {
+                        onChange: (event: ChangeEvent<HTMLInputElement>) => {
+                          setValue(
+                            "amount",
+                            event.target?.checked
+                              ? String(assetBalance?.balance) ?? "0"
+                              : "0",
+                          );
+                        },
+                      })}
+                      className=" mt-1 scale-150"
+                      type="checkbox"
+                      id="max"
+                    />
+                    <label
+                      className="text-md text-[#6E6E6E]"
+                      htmlFor="max"
+                    >
+                      Max (
+                      {assetBalance?.balance
+                        ? `${Number(assetBalance?.balance).toFixed(6) ?? 0} ${assetBalance?.name ?? ""
+                        }`
+                        : 0}
+                      )
+                    </label>
+                  </div>
+                </div>
+
+                <div className="mt-3">
+                  <Controller
+                    control={control}
+                    name="paymentSystem"
+                    rules={{
+                      required: "Please select an payment system",
+                    }}
+                    render={({
+                      field: { value, onChange },
+                      fieldState: { error },
+                    }) => (
+                      <Fragment>
+                        {/* Label outside the input field */}
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                          Payment system types
+                        </label>
+
+                        <Autocomplete
+                          size="medium"
+                          options={filteredAssets}
+                          onChange={(_, nextValue) => {
+                            onChange(nextValue?.fireblockAssetId ?? ""),
+                              setValue("whitelistId", "");
+                          }}
+                          value={assetValue ? assetValue : null}
+                          getOptionLabel={(option) => {
+                            return option.name ? option.name : value;
+                          }}
+                          renderOption={(props, option) => (
+                            <li
+                              {...props}
+                              className="flex cursor-pointer items-center gap-2 p-2"
+                            >
+                              <Image
+                                src={option.icon ?? ""}
+                                alt={option.name}
+                                width={30}
+                                height={30}
+                              />
+                              {option.name}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              className="flex items-center gap-2 bg-[#ffffff]"
+                              {...params}
                               placeholder="Select currency"
                               InputProps={{
                                 ...params.InputProps,
@@ -902,8 +721,6 @@ const CryptoWithdrawal = () => {
                                           height={80}
                                         />
                                       )}
-
-                                      {/* {params.InputProps.startAdornment} */}
                                     </Fragment>
                                   );
                                 })(),
@@ -912,188 +729,68 @@ const CryptoWithdrawal = () => {
                             />
                           )}
                         />
-                        <p className="text-sm text-red-500">{error?.message}</p>
+                        <p className="text-sm text-red-500">
+                          {error?.message}
+                        </p>
                       </Fragment>
                     )}
                   />
                 </div>
+              </div>
+              <div className="flex flex-col gap-2 rounded  bg-[#C1902D1F]  shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] mt-6 px-12 py-12">
+                <div className="flex justify-between text-base font-bold py-3">
+                  <span>Transfers</span>
+                  <span>0</span>
+                </div>
 
-                {(selectedAsset !== "EUR" ||
-                  (isTemplateSelected && isTemplateApproved)) && (
-                  <div>
-                    <div className=" mt-2">
-                      <Controller
-                        name="amount"
-                        control={control}
-                        rules={{
-                          required: "Please enter the amount",
-                          max: {
-                            value: assetBalance?.balance ?? 0,
-                            message: "Amount cannot be more than balance",
-                          },
-                          validate: (amount) =>
-                            parseFloat(amount) > 0
-                              ? undefined
-                              : "Amount cannot be zero or less than zero",
-                        }}
-                        render={({
-                          field: { onChange, value },
-                          fieldState: { error },
-                        }) => (
-                          <Fragment>
-                            <TextField
-                              type="number"
-                              onWheel={() =>
-                                (
-                                  document?.activeElement as HTMLInputElement
-                                )?.blur()
-                              }
-                              size="small"
-                              fullWidth
-                              onChange={onChange}
-                              value={value ? value : ""}
-                              placeholder="Amount"
-                              variant="outlined"
-                              disabled={isMax}
-                            />
-                            <p className="text-sm text-red-500">
-                              {error?.message}
-                            </p>
-                          </Fragment>
-                        )}
-                      />
-                    </div>
-                    <div className="ml-1 mt-4 flex w-fit items-center gap-2">
-                      <input
-                        {...register("isMax", {
-                          onChange: (event: ChangeEvent<HTMLInputElement>) => {
-                            setValue(
-                              "amount",
-                              event.target?.checked
-                                ? String(assetBalance?.balance) ?? "0"
-                                : "0",
-                            );
-                          },
-                        })}
-                        className=" mt-1 scale-150"
-                        type="checkbox"
-                        id="max"
-                      />
+                <div className="flex justify-between text-base font-bold py-3">
+                  <span>Fees</span>
+                  <span>0</span>
+                </div>
+                <div className="flex justify-between text-base font-bold py-3">
+                  <span>Amount</span>
+                  <span>0</span>
+                </div>
+              </div>
+            </div>
+            <div className=" w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:w-[64%]">
+              <div className="w-full">
+                <div className="border-b-2 py-2">
+                  <p className=" mb-4 font-bold">Enter Beneficiary Details</p>
+                </div>
+                <div className="w-full">
+                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                    <div className=" text-base  md:col-span-2 pt-4">
                       <label
-                        className="text-md font-bold text-[#6E6E6E]"
+                        className="text-base text-[#6E6E6E]"
                         htmlFor="max"
                       >
-                        Max (
-                        {assetBalance?.balance
-                          ? `${Number(assetBalance?.balance).toFixed(6) ?? 0} ${
-                              assetBalance?.name ?? ""
-                            }`
-                          : 0}
-                        )
+                        Enter Customer Info
                       </label>
                     </div>
-                  </div>
-                )}
 
-                {selectedAsset !== "EUR" && (
-                  <div className="">
-                    <div className="flex justify-between">
-                      <LabelName name="addressType" label={"Wallet Address"} />
-
-                      <Controller
-                        name="addressType"
-                        control={control}
-                        render={({ field: { onChange, value } }) => (
-                          <div className="flex flex-col md:flex-row">
-                            <ul
-                              onClick={() => onChange("ONETIME")}
-                              className={`cursor-pointer list-inside rounded p-2 ${
-                                value === "WHITELIST"
-                                  ? "text-[#BABABA]"
-                                  : "list-disc rounded bg-[#99B2C636] font-semibold text-[#217EFD]"
-                              } `}
-                            >
-                              <li className=" text-sm xl:text-base ">
-                                One time address
-                              </li>
-                            </ul>
-                            <ul
-                              onClick={() => onChange("WHITELIST")}
-                              className={`cursor-pointer list-inside rounded   p-2 ${
-                                value === "ONETIME"
-                                  ? "text-[#BABABA]"
-                                  : "list-disc rounded bg-[#99B2C636] font-semibold text-[#217EFD]"
-                              } `}
-                            >
-                              <li className="text-sm xl:text-base ">
-                                White listed address
-                              </li>
-                            </ul>
-                          </div>
-                        )}
-                      />
-                    </div>
-
-                    {currentAddressType === "ONETIME" ? (
-                      <Controller
-                        name="oneTimeAddress"
-                        control={control}
-                        rules={{
-                          required: "Please enter the destination address",
-                        }}
-                        render={({
-                          field: { onChange, value },
-                          fieldState: { error },
-                        }) => (
-                          <Fragment>
-                            <TextField
-                              size="small"
-                              fullWidth
-                              onChange={onChange}
-                              value={value}
-                              placeholder="Enter Address"
-                              variant="outlined"
-                            />
-                            <p className="text-sm text-red-500">
-                              {error?.message}
-                            </p>
-                          </Fragment>
-                        )}
-                      />
-                    ) : (
-                      currentAddressType === "WHITELIST" && (
+                    {/* IBAN  */}
+                    <div className="">
+                      <LabelName name="IBAN" label="IBAN*"></LabelName>
+                      <div className="flex flex-col">
                         <Controller
-                          name="whitelistId"
+                          name="IBAN"
                           control={control}
                           rules={{
-                            required: "Please select whitelisted address",
+                            required: "Please enter company name",
                           }}
                           render={({
                             field: { onChange, value },
                             fieldState: { error },
                           }) => (
                             <Fragment>
-                              <Autocomplete
+                              <TextField
+                                type="text"
                                 size="small"
-                                options={whitelistOptions}
-                                onChange={(_, addressId) => {
-                                  onChange(addressId?.id);
-                                  // setValue("whitelistId", addressId?.assetAddress);
-                                }}
-                                value={whitelistedAddress.find(
-                                  (item) => item?.id == value,
-                                )}
-                                getOptionLabel={(option) => option.label}
-                                renderOption={(props, option) => (
-                                  <li {...props}>{option.label}</li>
-                                )}
-                                renderInput={(params) => (
-                                  <TextField
-                                    {...params}
-                                    placeholder="Select Whitelisted address"
-                                    variant="outlined"
-                                  />
-                                )}
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
                               />
                               <p className="text-sm text-red-500">
                                 {error?.message}
@@ -1101,124 +798,87 @@ const CryptoWithdrawal = () => {
                             </Fragment>
                           )}
                         />
-                      )
-                    )}
-                  </div>
-                )}
-
-                <div>
-                  <Controller
-                    name="description"
-                    control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <Fragment>
-                        <textarea
-                          className="mt-2 w-full resize-none rounded-md px-4 py-2 outline outline-1 outline-[#c4c4c4]  placeholder:font-normal"
-                          placeholder={"Description"}
-                          rows={1}
-                          value={value ?? ""}
-                          onChange={onChange}
-                        />
-                      </Fragment>
-                    )}
-                  />
-                </div>
-
-                {selectedAsset === "EUR" &&
-                  isTemplateSelected &&
-                  isTemplateApproved && (
-                    <SelectComponent
-                      control={control}
-                      options={paymentSystemList}
-                      valueKey="value"
-                      labelKey="label"
-                      label="Payment system type"
-                      name="paymentSystemType"
-                      rules={{ required: "Payment system type is required" }}
-                    />
-                  )}
-
-                {selectedAsset === "EUR" && (
-                  <>
-                    <SelectComponent
-                      control={control}
-                      options={euroTemplates ?? []}
-                      rules={{
-                        validate: () =>
-                          !isTemplateApproved && !!isTemplateSelected
-                            ? `Template is not approved. Please contact at ${
-                                adminEmail ?? ""
-                              }`
-                            : undefined,
-                      }}
-                      valueKey="templateName"
-                      labelKey="templateName"
-                      label="Euro Templates"
-                      name="euroTemplate"
-                      // rules={{ required: "Select country" }}
-                    />
-                  </>
-                )}
-
-                <div
-                  className={`${
-                    selectedAsset === "EUR" ? `hidden` : ` mx-auto block w-fit`
-                  } `}
-                >
-                  <MuiButton
-                    name={"Create transfer"}
-                    type="submit"
-                    loading={isSubmitting}
-                  />
-                </div>
-              </div>
-              {selectedAsset === "EUR" &&
-                isTemplateSelected &&
-                isTemplateApproved && (
-                  <>
-                    <div className=" mt-4 rounded-md bg-[#e9e9e9] px-8 py-4 shadow-[0px_1px_6px_0px_rgba(0,0,0,0.40)]">
-                      <div className="flex justify-between">
-                        <p className="pb-3 font-medium">Transfer</p>{" "}
-                        <p>
-                          {Number(amount) > 0 ? amount : 0} {selectedAsset}
-                        </p>
-                      </div>
-                      <div className="flex justify-between">
-                        <p className="pb-3 font-medium">Fees</p>
-                        <p>
-                          {transferFee} {selectedAsset}
-                        </p>
-                      </div>
-                      <div className="flex justify-between">
-                        <p className="font-medium">Amount</p>
-                        <p>
-                          {Number(amount) - Number(transferFee)} {selectedAsset}
-                        </p>
                       </div>
                     </div>
-                  </>
-                )}
-            </div>
-            {selectedAsset === "EUR" && (
-              <div className=" w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:w-[64%]">
-                <div className="w-full">
-                  <p className=" mb-4 font-bold">BENEFICIARY DETAILS</p>
 
-                  <div className="w-full">
-                    <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-3">
-                      <div className=" text-base font-medium md:col-span-3">
+                    {/* CUSTOMER NAME  */}
+                    <div className="">
+                      <div className="flex flex-col ">
                         <LabelName
-                          name="customer_info"
-                          label="CUSTOMER INFO"
+                          name="customerName"
+                          label="Customer name*"
                         ></LabelName>
-                      </div>
 
-                      {/* IBAN  */}
-                      <div className="">
-                        {/* <LabelName name="IBAN" label="IBAN"></LabelName> */}
+                        <Controller
+                          name="customerName"
+                          control={control}
+                          rules={{
+                            required: "Please enter customer name",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Test 2 */}
+                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                    {/* Customer address*  */}
+                    <div className="pt-4">
+                      <LabelName name="customerAddress" label="Customer address*"></LabelName>
+                      <div className="flex flex-col">
+                        <Controller
+                          name="customerAddress"
+                          control={control}
+                          rules={{
+                            required: "Please enter customer address",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                      {/* Zip code  */}
+                      <div className="pt-4">
+                        <LabelName name="Zipcode" label="Zip code*"></LabelName>
                         <div className="flex flex-col">
                           <Controller
-                            name="IBAN"
+                            name="Zipcode"
                             control={control}
                             rules={{
                               required: "Please enter company name",
@@ -1234,7 +894,6 @@ const CryptoWithdrawal = () => {
                                   fullWidth
                                   onChange={onChange}
                                   value={value ? value : ""}
-                                  placeholder="IBAN*"
                                   variant="outlined"
                                 />
                                 <p className="text-sm text-red-500">
@@ -1246,130 +905,19 @@ const CryptoWithdrawal = () => {
                         </div>
                       </div>
 
-                      {/* CUSTOMER NAME  */}
-                      <div className="">
+                      {/* Customer city*  */}
+                      <div className="pt-4">
                         <div className="flex flex-col ">
-                          {/* <LabelName
-                            name="customerName"
-                            label="Customer name*"
-                          ></LabelName> */}
-
-                          <Controller
-                            name="customerName"
-                            control={control}
-                            rules={{
-                              required: "Please enter customer name",
-                            }}
-                            render={({
-                              field: { onChange, value },
-                              fieldState: { error },
-                            }) => (
-                              <Fragment>
-                                <TextField
-                                  type="text"
-                                  size="small"
-                                  fullWidth
-                                  onChange={onChange}
-                                  value={value ? value : ""}
-                                  placeholder="Customer name"
-                                  variant="outlined"
-                                />
-                                <p className="text-sm text-red-500">
-                                  {error?.message}
-                                </p>
-                              </Fragment>
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      {/* CUSTOMER ADDRESS  */}
-                      <div className="">
-                        <div className="flex flex-col">
-                          {/* <LabelName
-                            name="address"
-                            label="Customer address*"
-                          ></LabelName> */}
-
-                          <Controller
-                            name="address"
-                            control={control}
-                            rules={{
-                              required: "Please enter customer address",
-                            }}
-                            render={({
-                              field: { onChange, value },
-                              fieldState: { error },
-                            }) => (
-                              <Fragment>
-                                <TextField
-                                  type="text"
-                                  size="small"
-                                  fullWidth
-                                  onChange={onChange}
-                                  value={value ? value : ""}
-                                  variant="outlined"
-                                  placeholder="Customer address"
-                                />
-                                <p className="text-sm text-red-500">
-                                  {error?.message}
-                                </p>
-                              </Fragment>
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      {/* CUSTOMER ZIP CODE  */}
-                      <div className="">
-                        <div className="flex flex-col gap-2">
-                          {/* <LabelName
-                            name="customerZipcode"
-                            label="Customer zip code*"
-                          ></LabelName> */}
-
-                          <Controller
-                            name="customerZipcode"
-                            control={control}
-                            rules={{
-                              required: "Please enter customer zip code",
-                            }}
-                            render={({
-                              field: { onChange, value },
-                              fieldState: { error },
-                            }) => (
-                              <Fragment>
-                                <TextField
-                                  type="text"
-                                  size="small"
-                                  fullWidth
-                                  onChange={onChange}
-                                  value={value ? value : ""}
-                                  variant="outlined"
-                                  placeholder="Customer zip code"
-                                />
-                                <p className="text-sm text-red-500">
-                                  {error?.message}
-                                </p>
-                              </Fragment>
-                            )}
-                          />
-                        </div>
-                      </div>
-
-                      {/* CUSTOMER CITY  */}
-                      <div className="">
-                        <div className="flex flex-col gap-2">
-                          {/* <LabelName
-                            name="city"
+                          <LabelName
+                            name="Customercity"
                             label="Customer city*"
-                          ></LabelName> */}
+                          ></LabelName>
 
                           <Controller
-                            name="city"
+                            name="Customercity"
                             control={control}
                             rules={{
-                              required: "Please enter customer name",
+                              required: "Please enter customer city",
                             }}
                             render={({
                               field: { onChange, value },
@@ -1383,7 +931,6 @@ const CryptoWithdrawal = () => {
                                   onChange={onChange}
                                   value={value ? value : ""}
                                   variant="outlined"
-                                  placeholder="Customer city*"
                                 />
                                 <p className="text-sm text-red-500">
                                   {error?.message}
@@ -1393,266 +940,412 @@ const CryptoWithdrawal = () => {
                           />
                         </div>
                       </div>
+                    </div>
+                  </div>
 
-                      {/* COUNTRY  */}
-                      <SelectComponent
+                  {/* Test 3 */}
+                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-3">
+                    {/* Country*  */}
+                    <div className="pt-4">
+                      <Controller
                         control={control}
-                        options={countryList}
-                        required={true}
-                        valueKey="name"
-                        labelKey="name"
-                        label="Country*"
-                        name="countryOfIssue"
-                        rules={{ required: "Select country" }}
+                        name="Country"
+                        rules={{
+                          required: "Please select from",
+                        }}
+                        render={({
+                          field: { value, onChange },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            {/* Label outside the input field */}
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Country*
+                            </label>
+
+                            <Autocomplete
+                              size="small"
+                              options={filteredAssets}
+                              onChange={(_, nextValue) => {
+                                onChange(nextValue?.fireblockAssetId ?? ""),
+                                  setValue("whitelistId", "");
+                              }}
+                              value={assetValue ? assetValue : null}
+                              getOptionLabel={(option) => {
+                                return option.name ? option.name : value;
+                              }}
+                              renderOption={(props, option) => (
+                                <li
+                                  {...props}
+                                  className="flex cursor-pointer items-center gap-2 p-2"
+                                >
+                                  <Image
+                                    src={option.icon ?? ""}
+                                    alt={option.name}
+                                    width={30}
+                                    height={30}
+                                  />
+                                  {option.name}
+                                </li>
+                              )}
+                              renderInput={(params) => (
+                                <TextField
+                                  className="flex items-center gap-2 bg-[#ffffff]"
+                                  {...params}
+                                  InputProps={{
+                                    ...params.InputProps,
+                                    startAdornment: (() => {
+                                      return (
+                                        <Fragment>
+                                          {assetValue && (
+                                            <Image
+                                              className="ml-2 h-5 w-4"
+                                              src={assetValue?.icon ?? ""}
+                                              alt={assetValue?.name}
+                                              width={80}
+                                              height={80}
+                                            />
+                                          )}
+                                        </Fragment>
+                                      );
+                                    })(),
+                                  }}
+                                  variant="outlined"
+                                />
+                              )}
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
                       />
                     </div>
-                    <div className="w-full ">
-                      <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-3">
-                        <div className="mt-2 text-base font-medium md:col-span-3">
-                          <LabelName
-                            name="bank_info"
-                            label="BANK INFO"
-                          ></LabelName>
-                        </div>
 
-                        {/* Swift  */}
-                        <div className="">
-                          {/* <LabelName
-                            name="Swift/Bic"
-                            label="Swift/Bic*"
-                          ></LabelName> */}
-                          <div className="flex flex-col">
-                            <Controller
-                              name="swift"
-                              control={control}
-                              rules={{
-                                required: "Please enter company name",
-                              }}
-                              render={({
-                                field: { onChange, value },
-                                fieldState: { error },
-                              }) => (
-                                <Fragment>
-                                  <TextField
-                                    type="text"
-                                    size="small"
-                                    fullWidth
-                                    onChange={onChange}
-                                    value={value ? value : ""}
-                                    placeholder="Swift/Bic*"
-                                    variant="outlined"
-                                  />
-                                  <p className="text-sm text-red-500">
-                                    {error?.message}
-                                  </p>
-                                </Fragment>
-                              )}
-                            />
-                          </div>
-                        </div>
+                    {/* Reference  */}
+                    <div className="pt-4">
+                      <div className="flex flex-col ">
+                        <LabelName
+                          name="Reference"
+                          label="Reference"
+                        ></LabelName>
 
-                        {/* BANK NAME  */}
-                        <div className="">
-                          <div className="flex flex-col">
-                            {/* <LabelName
-                              name="bankName"
-                              label="Bank name*"
-                            ></LabelName> */}
-
-                            <Controller
-                              name="bankName"
-                              control={control}
-                              rules={{
-                                required: "Please enter bank name",
-                              }}
-                              render={({
-                                field: { onChange, value },
-                                fieldState: { error },
-                              }) => (
-                                <Fragment>
-                                  <TextField
-                                    type="text"
-                                    size="small"
-                                    fullWidth
-                                    onChange={onChange}
-                                    value={value ? value : ""}
-                                    placeholder="Bank name*"
-                                    variant="outlined"
-                                  />
-                                  <p className="text-sm text-red-500">
-                                    {error?.message}
-                                  </p>
-                                </Fragment>
-                              )}
-                            />
-                          </div>
-                        </div>
-
-                        {/* BANK ADDRESS  */}
-                        <div className="">
-                          <div className="flex flex-col">
-                            {/* <LabelName
-                              name="bankAddress"
-                              label="Bank address"
-                            ></LabelName> */}
-
-                            <Controller
-                              name="bankAddress"
-                              control={control}
-                              // rules={{
-                              //   required: "Please enter bank address",
-                              // }}
-                              render={({
-                                field: { onChange, value },
-                                fieldState: { error },
-                              }) => (
-                                <Fragment>
-                                  <TextField
-                                    type="text"
-                                    size="small"
-                                    fullWidth
-                                    onChange={onChange}
-                                    value={value ? value : ""}
-                                    variant="outlined"
-                                    placeholder="Bank address"
-                                  />
-                                  <p className="text-sm text-red-500">
-                                    {error?.message}
-                                  </p>
-                                </Fragment>
-                              )}
-                            />
-                          </div>
-                        </div>
-
-                        {/* BANK LOCATION  */}
-                        <div className="">
-                          <div className="flex flex-col">
-                            {/* <LabelName
-                              name="bankLocation"
-                              label="Bank Location"
-                            ></LabelName> */}
-
-                            <Controller
-                              name="bankLocation"
-                              control={control}
-                              // rules={{
-                              //   required: "Please enter bank location",
-                              // }}
-                              render={({
-                                field: { onChange, value },
-                                fieldState: { error },
-                              }) => (
-                                <Fragment>
-                                  <TextField
-                                    type="text"
-                                    size="small"
-                                    fullWidth
-                                    onChange={onChange}
-                                    value={value ? value : ""}
-                                    variant="outlined"
-                                    placeholder="Bank Location"
-                                  />
-                                  <p className="text-sm text-red-500">
-                                    {error?.message}
-                                  </p>
-                                </Fragment>
-                              )}
-                            />
-                          </div>
-                        </div>
-
-                        {/* COUNTRY  */}
-                        <SelectComponent
+                        <Controller
+                          name="Reference"
                           control={control}
-                          options={countryList}
-                          required={true}
-                          valueKey="name"
-                          labelKey="name"
-                          label="Country*"
-                          name="bankCountry"
-                          rules={{ required: "Select country" }}
+                          rules={{
+                            required: "Please enter customer name",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
                         />
-                        <div className="">
-                          {/* <LabelName
-                            name="reference"
-                            label="Reference"
-                          ></LabelName> */}
-                          <div className="flex flex-col">
-                            <Controller
-                              name="reference"
-                              control={control}
-                              rules={{
-                                required: "Please enter reference name",
-                              }}
-                              render={({
-                                field: { onChange, value },
-                                fieldState: { error },
-                              }) => (
-                                <Fragment>
-                                  <TextField
-                                    type="text"
-                                    size="small"
-                                    fullWidth
-                                    onChange={onChange}
-                                    value={value ? value : ""}
-                                    placeholder="Reference"
-                                    variant="outlined"
-                                  />
-                                  <p className="text-sm text-red-500">
-                                    {error?.message}
-                                  </p>
-                                </Fragment>
-                              )}
-                            />
-                          </div>
-                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <div className="flex flex-col ">
+                        <LabelName
+                          name="Description"
+                          label="Description"
+                        ></LabelName>
+
+                        <Controller
+                          name="Description"
+                          control={control}
+                          rules={{
+                            required: "Please enter description",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex items-center justify-end">
-                  {/* <div className="my-4 flex w-fit items-center gap-2">
+                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                    <div className=" text-base  md:col-span-2 pt-12">
+                      <label
+                        className="text-base text-[#6E6E6E]"
+                        htmlFor="max"
+                      >
+                        Enter Banking Info
+                      </label>
+                    </div>
+
+                    {/* Swift/Bic*  */}
+                    <div className="pt-4">
+                      <LabelName name="swiftBic" label="Swift/Bic*"></LabelName>
+                      <div className="flex flex-col">
+                        <Controller
+                          name="swiftBic"
+                          control={control}
+                          rules={{
+                            required: "Please enter company name",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Bank name*  */}
+                    <div className="pt-4">
+                      <div className="flex flex-col ">
+                        <LabelName
+                          name="Bankname*"
+                          label="Bank name*"
+                        ></LabelName>
+
+                        <Controller
+                          name="Bankname"
+                          control={control}
+                          rules={{
+                            required: "Please enter bank name",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-1">
+                    {/* Bank address*  */}
+                    <div className="pt-4">
+                      <LabelName name="Bankaddress" label="Bank address*"></LabelName>
+                      <div className="flex flex-col">
+                        <Controller
+                          name="Bankaddress"
+                          control={control}
+                          rules={{
+                            required: "Please enter bank address",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                    {/* Bank Location*  */}
+                    <div className="pt-4">
+                      <LabelName name="Banklocation" label="Bank Location*"></LabelName>
+                      <div className="flex flex-col">
+                        <Controller
+                          name="Banklocation"
+                          control={control}
+                          rules={{
+                            required: "Please enter bank location",
+                          }}
+                          render={({
+                            field: { onChange, value },
+                            fieldState: { error },
+                          }) => (
+                            <Fragment>
+                              <TextField
+                                type="text"
+                                size="small"
+                                fullWidth
+                                onChange={onChange}
+                                value={value ? value : ""}
+                                variant="outlined"
+                              />
+                              <p className="text-sm text-red-500">
+                                {error?.message}
+                              </p>
+                            </Fragment>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <div className="pt-4">
+                      <Controller
+                        control={control}
+                        name="bankCountry"
+                        rules={{
+                          required: "Please select bank country",
+                        }}
+                        render={({
+                          field: { value, onChange },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            {/* Label outside the input field */}
+                            <label className="mb-2 block text-sm font-medium text-gray-700">
+                              Country*
+                            </label>
+
+                            <Autocomplete
+                              size="small"
+                              options={filteredAssets}
+                              onChange={(_, nextValue) => {
+                                onChange(nextValue?.fireblockAssetId ?? ""),
+                                  setValue("whitelistId", "");
+                              }}
+                              value={assetValue ? assetValue : null}
+                              getOptionLabel={(option) => {
+                                return option.name ? option.name : value;
+                              }}
+                              renderOption={(props, option) => (
+                                <li
+                                  {...props}
+                                  className="flex cursor-pointer items-center gap-2 p-2"
+                                >
+                                  <Image
+                                    src={option.icon ?? ""}
+                                    alt={option.name}
+                                    width={30}
+                                    height={30}
+                                  />
+                                  {option.name}
+                                </li>
+                              )}
+                              renderInput={(params) => (
+                                <TextField
+                                  className="flex items-center gap-2 bg-[#ffffff]"
+                                  {...params}
+                                  InputProps={{
+                                    ...params.InputProps,
+                                    startAdornment: (() => {
+                                      return (
+                                        <Fragment>
+                                          {assetValue && (
+                                            <Image
+                                              className="ml-2 h-5 w-4"
+                                              src={assetValue?.icon ?? ""}
+                                              alt={assetValue?.name}
+                                              width={80}
+                                              height={80}
+                                            />
+                                          )}
+                                        </Fragment>
+                                      );
+                                    })(),
+                                  }}
+                                  variant="outlined"
+                                />
+                              )}
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="ml-1 mt-4 flex w-fit items-center gap-2">
                     <input
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          handleSaveTemplate();
-                        }
-                        // e.target.checked
-                        //   ? void setVolume(assetBalance?.balance)
-                        //   : void setVolume("");
-                      }}
-                      className="ml-1 mt-1 scale-150"
+                      {...register("isMax", {
+                        onChange: (event: ChangeEvent<HTMLInputElement>) => {
+                          setValue(
+                            "amount",
+                            event.target?.checked
+                              ? String(assetBalance?.balance) ?? "0"
+                              : "0",
+                          );
+                        },
+                      })}
+                      className=" mt-1 scale-100"
                       type="checkbox"
-                      id="max1"
+                      id="max"
                     />
                     <label
-                      className="text-md font-bold text-[#C1922E]"
-                      htmlFor="max1"
+                      className="text-md  text-[#6E6E6E]"
+                      htmlFor="max"
                     >
-                      Save Template
+                      Save template
                     </label>
-                  </div> */}
-                  <div className="">
-                    <MuiButton
-                      name={`${
-                        !isTemplateApproved && !!isTemplateSelected
-                          ? "Template not Approved"
-                          : isTemplateApproved && !!isTemplateSelected
-                          ? "Create Transfer"
-                          : "Create Template"
-                      }`}
-                      type="submit"
-                      loading={isSubmitting}
-                    />
                   </div>
+
                 </div>
               </div>
-            )}
+            </div>
           </div>
         </form>
-
+        <CryptoTable />
         <TransitionDialog open={!!popupState} onClose={() => setPopupState("")}>
           {popupState === "CONFIRM" ? (
             <ConfirmDailog
