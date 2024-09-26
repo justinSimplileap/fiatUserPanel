@@ -109,7 +109,7 @@ const Topbar: React.FC<HeaderProps> = ({ title }) => {
       style={{
         boxShadow: "1.1802083253860474px 0px 5.901041507720947px 0px #0000000D",
       }}
-      className=" relative bg-white text-black"
+      className=" relative  bg-white text-black"
     >
       <div
         className={` z-[9999] m-auto flex h-20 w-[95%] items-center justify-between`}

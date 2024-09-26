@@ -196,7 +196,7 @@ const Dashboard = () => {
           />
         )} */}
 
-      <div className="dashboardContainer m-auto w-[95%]">
+      <div className="dashboardContainer m-auto  w-[95%]">
         <div className="my-5">
           <p className=" text-xl font-bold">
             Welcome &nbsp;

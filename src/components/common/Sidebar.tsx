@@ -12,7 +12,7 @@ import profile from "../../assets/navicons/profile.svg";
 import invoices from "../../assets/navicons/invoice.svg";
 import bulkupload from "../../assets/navicons/bulkupload.svg";
 import { SidebarContext } from "../context/SidebarProvider";
-import logout from "~/assets/general/logout.svg";
+import logout from "~/assets/navicons/logout.svg";
 import { RiCloseCircleLine } from "react-icons/ri";
 import { logout as LogoutUser } from "~/helpers/helper";
 import { ApiHandler } from "~/service/UtilService";
@@ -119,16 +119,11 @@ const Sidebar: React.FC = () => {
                 <Image
                   alt=""
                   src={item.icon as StaticImageData}
-                  className={`${
-                    pathName === item.path ? "opacity-100" : "opacity-50"
-                  }`}
+                  className={`font-semibold opacity-50 group-hover:opacity-100 ${
+                    pathName === item.path && "opacity-100"
+                  }  `}
                 />
                 <h1
-                  style={
-                    {
-                      // transitionDelay: `${i + 3}00ms`,
-                    }
-                  }
                   className={`font-semibold group-hover:text-[#fff] ${
                     pathName === item.path && "text-white"
                   }  ${open && "pointer-events-none opacity-0"}`}
@@ -139,7 +134,7 @@ const Sidebar: React.FC = () => {
             );
           })}
         </div>
-        {/* <div className="  absolute bottom-6 mt-5 flex flex-col justify-center gap-9 pl-6 capitalize">
+        <div className="  absolute bottom-6 mt-5 flex flex-col justify-center gap-9 pl-6 capitalize">
           <button
             className="group flex cursor-pointer items-center gap-3"
             onClick={LogoutUser}
@@ -147,17 +142,17 @@ const Sidebar: React.FC = () => {
             <Image
               alt=""
               src={logout as StaticImageData}
-              className={`brightness-0 group-hover:brightness-100`}
+              className={`opacity-50 group-hover:opacity-100`}
             />
             <h1
-              className={`font-semibold text-black group-hover:text-[#C3922E] ${
+              className={`font-semibold text-gray-500 group-hover:text-[#fff] ${
                 open && "opacity-0 "
               }`}
             >
               Logout
             </h1>
           </button>
-        </div> */}
+        </div>
       </nav>
       {/* Mobile */}
       <nav
@@ -216,7 +211,7 @@ const Sidebar: React.FC = () => {
             </div>
           ))}
         </div>
-        {/* <div className="absolute bottom-6 mt-5 flex flex-col justify-center gap-7 pl-6 capitalize">
+        <div className="absolute bottom-6 mt-5 flex flex-col justify-center gap-7 pl-6 capitalize">
           <button
             className="group flex cursor-pointer items-center gap-3"
             onClick={LogoutUser}
@@ -234,7 +229,7 @@ const Sidebar: React.FC = () => {
               Logout
             </h1>
           </button>
-        </div> */}
+        </div>
       </nav>
     </>
   );

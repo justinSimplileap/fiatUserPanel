@@ -64,24 +64,24 @@ const TransferDetailsDialog: React.FC<TransferDetailsDialogProps> = ({
         {/* Payment Details */}
         <h3 className="my-4 font-medium">Payment Details</h3>
         <Grid container spacing={2}>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>From</strong> <p>{selectedRow?.currency}</p>
           </Grid>
 
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Amount</strong> <p>{selectedRow?.account}</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Fee</strong> <p>No fee</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Description</strong> <p>{"Description"}</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Created on</strong> <p>{selectedRow?.creationDate}</p>
           </Grid>
 
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Last Modified on</strong> <p>{selectedRow?.creationDate}</p>
           </Grid>
         </Grid>
@@ -109,30 +109,30 @@ const TransferDetailsDialog: React.FC<TransferDetailsDialogProps> = ({
         </Box>
         <h3 className="my-4 font-medium">Beneficiary Details</h3>
         <Grid container spacing={2} className="mt-2">
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>IBAN</strong> <p>{selectedRow?.beneficiaryIban}</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Address </strong> <p>Address</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>City</strong>
             <p>Texas</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Reference</strong>
             <p>Texas</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Customer name</strong> <p>{selectedRow?.beneficiaryName}</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Zip code</strong> <p>586209</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Country</strong> <p>USA</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Description</strong> <p>1225221</p>
           </Grid>
         </Grid>
@@ -143,22 +143,22 @@ const TransferDetailsDialog: React.FC<TransferDetailsDialogProps> = ({
         </Box>
         <h3 className="my-4 font-medium">Beneficiary Bank</h3>
         <Grid container spacing={2}>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Swift/Bic</strong> <p>{selectedRow?.beneficiaryIban}</p>
           </Grid>
 
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Bank Address</strong> <p>Address</p>
           </Grid>
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Country</strong> <p>USA</p>
           </Grid>
 
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Bank Name</strong> <p>IBAN</p>
           </Grid>
 
-          <Grid item xs={6} className="grid grid-cols-2">
+          <Grid item xs={12} md={6} className="grid grid-cols-2">
             <strong>Bank Location</strong> <p>USA</p>
           </Grid>
         </Grid>
@@ -178,7 +178,7 @@ const TransferDetailsDialog: React.FC<TransferDetailsDialogProps> = ({
             <p>Payment confirmation sent to email</p>
           </Grid>
 
-          <Grid item className="flex gap-5">
+          <Grid item className="flex flex-col gap-5 md:flex-row">
             {/* First Button (Repeat) */}
             <MuiButton
               name=""

@@ -66,6 +66,7 @@ type RowData = {
   currency: string;
   fee: string;
   balance: string;
+  icon?: string;
 };
 
 export type {
