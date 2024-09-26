@@ -4,9 +4,7 @@ import Layout from "~/components/layout";
 const Login = () => {
   return (
     <Layout title="">
-      <div className="bg-black">
-        <LoginPage />
-      </div>
+      <LoginPage />
     </Layout>
   );
 };

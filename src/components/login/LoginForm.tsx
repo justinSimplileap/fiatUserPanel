@@ -11,6 +11,11 @@ import localStorageService from "~/service/LocalstorageService";
 import useGlobalStore from "~/store/useGlobalStore";
 import { decryptResponse } from "~/helpers/helper";
 import { ApiHandler } from "~/service/UtilService";
+import MuiButton from "../MuiButton";
+import Image from "next/image";
+import loginicon from "../../assets/auth/login.svg";
+import blktrade from "../../assets/navicons/blktrade.png";
+
 interface FormData {
   emailOrPhone: string;
   password: string;
@@ -23,6 +28,9 @@ const LoginForm: React.FC = () => {
 
   const [showEmailField, setShowEmailField] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedOption, setSelectedOption] = useState<string>("email");
+
+  const admin = useGlobalStore((state) => state.admin);
 
   const submitData = async (data: FormData) => {
     const { emailOrPhone, password } = data;
@@ -159,85 +167,139 @@ const LoginForm: React.FC = () => {
   return (
     <>
       <Toaster />
-      <div className="m-auto flex h-screen max-w-5xl items-center justify-center">
-        <div className="rounded bg-white p-8 shadow-md md:w-[40%]">
-          <h1 className="text-xl font-bold">Welcome back</h1>
-          <p className=" mt-2 font-medium">Login to access your account</p>
-          <form className=" mt-6 " onSubmit={handleSubmit(onSubmit)}>
-            {showEmailField ? (
-              <>
-                <div className="mb-4">
-                  <ExchangeInput
-                    control={control}
-                    placeholder="Enter the email or phone number"
-                    label="Email/Phone number"
-                    name="emailOrPhone"
-                    type="text"
-                    rules={{
-                      required: "First name is required",
-                      validate: (value: string) =>
-                        value.trim() !== "" || "This field cannot be blank",
-                    }}
-                  />
-                </div>
-                <p className="mb-4 text-sm">
-                  Not registered ?
-                  <Link
-                    className="mx-2 font-bold text-blue-600"
-                    href="/auth/signup"
-                  >
-                    Signup here
-                  </Link>
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="mb-4">
-                  <div className="mb-2 block text-sm">Email / Phone number</div>
-                  <div className="text-lg font-bold">{emailOrPhone}</div>
-                </div>
+      <div className="grid h-screen grid-cols-1 bg-white md:grid-cols-2">
+        {/* Left side: Form */}
+        <div className="m-auto rounded  md:w-[50%]">
+          <div className="flex flex-col gap-2">
+            {/* {admin?.profileImgLink && ( */}
+            <div className="logo relative flex items-center justify-center py-1 ">
+              <Image
+                alt={"Profile"}
+                className=" object-cover"
+                src={blktrade}
+                width={"200"}
+                height={"200"}
+                priority={true}
+              />
+            </div>
+            {/* )} */}
+            <p className="text-center text-[32px] font-medium">
+              Login to Your Account
+            </p>
+
+            <div className="flex space-x-4 bg-[#F9F9F9] p-2">
+              <MuiButton
+                color={`${selectedOption === "email" ? "white" : "black"}`}
+                background={`${
+                  selectedOption === "email" ? "#C1922E" : "white"
+                }`}
+                borderColor={`${
+                  selectedOption === "email" ? "#C1922E" : "white"
+                }`}
+                className="w-1/2"
+                name="Email ID"
+                borderRadius="0.1rem"
+                type="button"
+                onClick={() => setSelectedOption("email")}
+              />
+              <MuiButton
+                color={`${selectedOption === "phone" ? "white" : "black"}`}
+                background={`${
+                  selectedOption === "phone" ? "#C1922E" : "white"
+                }`}
+                borderColor={`${
+                  selectedOption === "phone" ? "#C1922E" : "white"
+                }`}
+                className="w-1/2"
+                name="Mobile Number"
+                borderRadius="0.1rem"
+                type="button"
+                onClick={() => setSelectedOption("phone")}
+              />
+            </div>
+
+            <form className="" onSubmit={handleSubmit(onSubmit)}>
+              {selectedOption === "email" ? (
                 <div className="">
                   <ExchangeInput
                     control={control}
-                    label="Enter password"
-                    name="password"
-                    type="password"
+                    placeholder="Enter your email address..."
+                    label="Email Address"
+                    name="emailOrPhone"
+                    type="text"
                     rules={{
-                      required: "Password is required",
+                      required: "Email is required",
                     }}
                   />
                 </div>
-              </>
-            )}
-            {/* {!showEmailField && (
-              <div className=" mb-4">
-                <Link
-                  className="text-sm font-medium text-blue-600"
-                  href="/auth/forgotPassword"
-                >
-                  Forgot password
-                </Link>
-              </div>
-            )} */}
-
-            <div className="grid grid-flow-col ">
-              {!showEmailField && (
-                <button
-                  className="w-full text-sm"
-                  type="button"
-                  onClick={() => setShowEmailField(true)}
-                >
-                  Back
-                </button>
+              ) : (
+                <div className="">
+                  <ExchangeInput
+                    control={control}
+                    placeholder="Enter your phone number"
+                    label="Phone Number"
+                    name="emailOrPhone"
+                    type="text"
+                    rules={{
+                      required: "Phone number is required",
+                    }}
+                  />
+                </div>
               )}
-              <Button
-                className="flex w-full justify-center py-3 "
-                title="Next"
-                loading={isLoading}
-                type="submit"
-              />
-            </div>
-          </form>
+
+              <div className="">
+                <ExchangeInput
+                  control={control}
+                  label="Enter password"
+                  name="password"
+                  type="password"
+                  rules={{
+                    required: "Password is required",
+                  }}
+                />
+              </div>
+
+              <div className="my-3 flex items-center justify-between">
+                <label className="cursor-pointer text-gray-400">
+                  <input type="checkbox" /> Remember me
+                </label>
+                <p className="cursor-pointer font-semibold  text-[#C3922E]">
+                  Forget Password?
+                </p>
+              </div>
+
+              <div className="grid grid-flow-col">
+                <MuiButton
+                  name="Login"
+                  loading={isLoading}
+                  borderColor="black"
+                  background="black"
+                  color="white"
+                  borderRadius="0.3rem"
+                  type="submit"
+                />
+              </div>
+            </form>
+
+            <p className=" text-sm">
+              Not registered?
+              <Link
+                className="mx-2 font-bold text-[#C3922E]"
+                href="/auth/signup"
+              >
+                Signup here
+              </Link>
+            </p>
+          </div>
+        </div>
+
+        {/* Right side: Image */}
+        <div className="hidden h-full w-full md:block">
+          {/* <Image
+            src={loginicon} // Replace with your actual image path
+            alt="Login illustration"
+            className="h-full w-full object-cover"
+          /> */}
         </div>
       </div>
     </>
