@@ -8,7 +8,7 @@ function classNames(...classes: string[]) {
 }
 
 export default function Transfers() {
-  const Tabs = ["Asset withdrawal", "Transfer between users", "Templates"];
+  const Tabs = ["New Transfer", "Add New Beneficiary"];
   return (
     <div className=" mx-auto my-4 w-[95%]">
       <TabGroup>

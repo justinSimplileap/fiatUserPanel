@@ -10,29 +10,22 @@ interface OTCMail {
 }
 
 interface EuroMail {
-  templateId?: string | number;
-  IBAN: string;
-  customerName: string;
-  customerAddress: string;
-  customerZipcode: string;
-  customerCity: string;
-  customerCountry: string;
-  swift: string;
-  bankName: string;
-  bankAddress: string;
-  bankLocation: string;
-  bankCountry: string;
-  paymentSystemType: string;
-  reference: string;
-  isApproved: boolean;
-
+  assetId: string;
+  from: string;
   amount: string;
-  description: string;
-  userId: string;
-  firstname: string;
-  lastname: string;
-  id: string | number;
-  currency: string;
-  transferFee: string;
-  templateName?: string;
+  paymentSystem: string;
+  IBAN: string;
+  customerName: string | undefined;
+  customerAddress: string;
+  Zipcode: string;
+  Customercity: string;
+  Country: string;
+  Reference: string;
+  Description: string;
+  swiftBic: string;
+  Bankname: string;
+  Bankaddress: string;
+  Banklocation: string;
+  bankcountry: string;
+  isApproved: boolean;
 }

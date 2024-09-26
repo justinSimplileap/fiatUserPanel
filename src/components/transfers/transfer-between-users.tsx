@@ -3,30 +3,50 @@ import {
   Fragment,
   useState,
   useMemo,
-  useEffect,
   type ChangeEvent,
+  useEffect,
 } from "react";
-import { Autocomplete, TextField } from "@mui/material";
+import {
+  Autocomplete,
+  TextField,
+} from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import MuiButton from "~/components/MuiButton";
-import Image, { StaticImageData } from "next/image";
-import TransitionDialog from "../common/TransitionDialog";
-import TwoFA from "../TwoFA";
 import useAsyncMasterStore from "~/hooks/useAsyncMasterStore";
 import useGlobalStore from "~/store/useGlobalStore";
+import {
+  getLimits,
+} from "~/service/api/transaction";
 import toast from "react-hot-toast";
 import useDashboard from "~/hooks/useDashboard";
 import WarningMsg from "../common/WarningMsg";
 import Router, { useRouter } from "next/router";
-import ConfirmDailog from "./confirmDailog";
 import { ApiHandler } from "~/service/UtilService";
 import {
-  createInternalTransfer,
+  SendEuroMail,
+  SendOTCTradeMail,
   createTransfer,
   fetchTransaferFeesApi,
+  saveEuroTemplate,
 } from "~/service/ApiRequests";
-import { dateValidation } from "~/helpers/helper";
+import ExchangeDropdown from "../common/ExchangeDropdown";
+import { CountryListType, DropDownOptionsType } from "~/types/Common";
+import Close from "~/assets/general/close.svg";
+import SelectComponent from "../common/SelectComponent";
+import {
+  changeName,
+  coinForKrakenName,
+  dateValidation,
+  formatDate,
+} from "~/helpers/helper";
+import localStorageService from "~/service/LocalstorageService";
+import Button from "../common/Button";
 import { getTransferFeesByPricelistId } from "~/service/api/pricelists";
+import CryptoTable from "./crypto-table";
+import Image from "next/image";
+import ConfirmDailog from "./create-template-confirm";
+import TransitionDialog from "../common/TransitionDialog";
+import TwoFA from "../TwoFA";
 
 const WithdrawalInit: CryptoWithdrawalForm = {
   assetId: "",
@@ -53,7 +73,21 @@ const WithdrawalInit: CryptoWithdrawalForm = {
   customerZipcode: "",
   euroTemplate: "",
   isApproved: false,
+  bankcountry: undefined,
+  Banklocation: undefined,
+  Bankaddress: undefined,
+  Bankname: undefined,
+  swiftBic: undefined,
+  Description: undefined,
+  Reference: undefined,
+  Country: undefined,
+  Customercity: undefined,
+  Zipcode: undefined,
+  paymentSystem: undefined,
+  customerAddress: "",
+  from: undefined
 };
+
 const FeeInit: CalculatedFee = {
   net: 0,
   withdrawal: "",
@@ -62,30 +96,32 @@ const FeeInit: CalculatedFee = {
   maximumFee: "",
 };
 
-const TransferFeesInit: TransferFees = {
-  id: NaN,
-  priceListId: 0,
-  name: "",
-  status: "",
-  validFrom: "",
-  validTo: "",
-  currencyId: "",
-  percent: 0,
-  fixedFee: 0,
-  minimumFee: null,
-  maximumFee: null,
-  transferGroup: "",
-  beneficiaryGroup: "",
-  paymentMethod: "",
-};
+interface Template {
+  index: number;
+  templateName: string;
+}
+
+interface TransactionConfirmData {
+  clientName: string;
+  contactPerson: string;
+  date: string;
+  fromCurrency: string;
+  amount?: string;
+  accountNumber?: string;
+}
 
 const CryptoWithdrawal = () => {
   const dashboard = useGlobalStore((state) => state.dashboard);
+  const router = useRouter();
+  const countryList = useAsyncMasterStore<"country">("country");
+
+  // Accessing router properties
+  const { pathname, query, asPath } = router;
 
   const assets = useAsyncMasterStore<"assets">("assets");
-  const filterdAssets = assets.filter(
-    (item) =>
-      item.fireblockAssetId !== "EUR" && item.fireblockAssetId !== "USD",
+
+  const filteredAssets = assets.filter(
+    (asset) => asset.fireblockAssetId !== "USD",
   );
 
   const dashboardAssets = useDashboard()?.assets;
@@ -106,7 +142,7 @@ const CryptoWithdrawal = () => {
     fee: FeeInit,
   });
 
-  const [popupState, setPopupState] = useState<"CONFIRM" | "2FA" | "">("");
+  const [open, setOpen] = useState<string>("");
   const [transferFees, setTransferFees] = useState<TransferFees[]>([]);
 
   const {
@@ -114,11 +150,26 @@ const CryptoWithdrawal = () => {
     control,
     handleSubmit,
     reset,
+    watch,
     setValue,
     formState: { isSubmitting },
   } = useForm<CryptoWithdrawalForm>({
     defaultValues: WithdrawalInit,
   });
+
+  const [popupState, setPopupState] = useState(false);
+  const [twoFAPopupState, setTwoFAPopupState] = useState(false);
+
+  const handleTwofa = () => {
+      setTwoFAPopupState(true)
+      setPopupState(false)
+  }
+
+
+  const handleTwoFASubmit = () => {
+      console.log("2FA verified and action authorized!");
+      setTwoFAPopupState(false);
+  };
 
   useEffect(() => {
     if (user.priceList) {
@@ -126,18 +177,20 @@ const CryptoWithdrawal = () => {
     }
   }, []);
 
-  // useEffect(() => {
-  //   // Check if there is data in verificationStatus.isUserVerified
-  //   if (verificationStatus.isUserVerified) {
-  //     if (verificationStatus.isUserVerified !== "APPROVED") {
-  //       router.push("/app/dashboard");
-  //       toast.error(
-  //         "Profile approval pending. Please contact Exchange CRM team",
-  //         { id: "non-verified" },
-  //       );
-  //     }
-  //   }
-  // }, []);
+  const assetId = watch("assetId");
+  const amount = watch("amount");
+  const transferFee = watch("transferFee");
+
+  const selectedAsset = useWatch({
+    control,
+    name: "assetId",
+  });
+
+  const [limits, setLimits] = useState<Limits[]>();
+
+  const [euroTemplates, setEuroTemplates] = useState<EuroMail[]>();
+  const [adminEmail, setAdminEmail] = useState("");
+  const [otcConfirmData, setOtcConfirmData] = useState<any>();
 
   useEffect(() => {
     if (priceList) {
@@ -145,29 +198,8 @@ const CryptoWithdrawal = () => {
     }
   }, [priceList]);
 
-  // useEffect(() => {
-  //   fetchTransaferFees();
-  // }, []);
-
-  const selectedAsset = useWatch({
-    control,
-    name: "assetId",
-  });
-
-  const selectedWhiteList = useWatch({
-    control,
-    name: "whitelistId",
-  });
-
-  const currentAddressType = useWatch({
-    control,
-    name: "addressType",
-  });
-  const isMax = useWatch({
-    control,
-    name: "isMax",
-  });
-
+  const template = watch("euroTemplate");
+  const isTemplateSelected = watch("euroTemplate");
   const whitelistOptions = useMemo(
     () => whitelistedAddress.filter((item) => item.assetId === selectedAsset),
     [selectedAsset],
@@ -175,7 +207,7 @@ const CryptoWithdrawal = () => {
 
   const assetBalance = useMemo(
     () => dashboardAssets.find((item) => item.assetId === selectedAsset),
-    [selectedAsset],
+    [selectedAsset, dashboard],
   );
 
   const fetchTransaferFees = async (assetId: any) => {
@@ -211,24 +243,49 @@ const CryptoWithdrawal = () => {
     };
   };
 
-  const onSubmit = async (data: CryptoWithdrawalForm) => {
-    const feeData = {
-      withdrawal: data?.amount,
-      net: 0, // You need to provide a value for net; I'm assuming it's a string for now
-      fee: 0, // You need to provide a value for fee; I'm assuming it's a number for now
-      minimumFee: "",
-      maximumFee: "",
-    };
+  const [euroTrasaction, setEuroTrasaction] = useState<EuroMail>();
 
+  const fetchLimitsPair = async (value: string) => {
+    const pair2 = coinForKrakenName(value) + "/EUR";
     try {
-      const response = await fetchTransaferFees(data);
+      const response = await fetch(
+        `https://api.kraken.com/0/public/Ticker?pair=${changeName(pair2)}`,
+      );
+
+      const data = await response.json();
+
+      if (data.result[changeName(pair2)]) {
+        return data.result[changeName(pair2)]?.a[0];
+      }
+    } catch (error) { }
+  };
+
+  const onSubmit = (data: CryptoWithdrawalForm) => {
+    if (selectedAsset === "EUR" && !isTemplateSelected) {
+      void handleSaveTemplate();
+    } else {
+      const feeData = {
+        withdrawal: data?.amount,
+        net: 0,
+        fee: 0,
+        minimumFee: "",
+        maximumFee: "",
+      };
+    }
+  };
+
+  useEffect(() => {
+    const fetchTransferFees = async () => {
+      const response = await fetchTransaferFees(selectedAsset);
 
       const minimumFee = Number(response?.minimumFee);
       const maximumFee = Number(response?.maximumFee);
+
       const calculatedFee =
-        Number(data?.amount) * (response?.percent / 100) +
-        Number(response?.fixedfee);
+        Number(amount) * (response?.percent / 100) + Number(response?.fixedfee);
+
       let finalFee;
+
       if (
         minimumFee !== null &&
         minimumFee !== 0 &&
@@ -244,236 +301,153 @@ const CryptoWithdrawal = () => {
       } else {
         finalFee = calculatedFee;
       }
-      feeData.net = parseFloat(data?.amount) - finalFee;
-      feeData.fee = finalFee;
-      if (feeData.net < 0) {
-        toast.error("Amount is too low");
-        return false;
-      }
-      if (feeData.net === 0) {
-        toast.error("Amount is too low");
-        return false;
-      }
 
-      if (response?.status) {
-        setTrasaction({ data, fee: feeData });
-        setPopupState("CONFIRM");
-      }
-    } catch (error) {
-      //
-    }
-  };
-
-  const on2FASubmit = async () => {
-    const formData = {
-      assetId: transaction?.data?.assetId,
-      amount: transaction?.data?.amount,
-      oneTimeAddress:
-        transaction.data.addressType === "WHITELIST"
-          ? whitelistOptions.find(
-              (item) => item.id === transaction.data.whitelistId,
-            )?.assetAddress
-          : transaction.data.addressType === "ONETIME"
-          ? transaction.data.oneTimeAddress
-          : "",
-      description: transaction?.data?.description,
-      transactionFee: transaction?.fee?.fee,
+      setValue("transferFee", finalFee.toString());
     };
 
-    const [data, error] = await ApiHandler(createTransfer, formData);
+    fetchTransferFees();
+  }, [amount]);
 
-    if (data?.success == true) {
-      toast.success("Transaction Successful");
-      setPopupState("");
-    }
+  const paymentSystemList = [{ value: "SEPA", label: "SEPA" }];
+
+  
+
+  const assetValue = filteredAssets?.find(
+    (item) => item.fireblockAssetId === assetId,
+  );
+
+  const LabelName = ({ name, label }: any) => {
+    return (
+      <label htmlFor={name} className="subText my-1 block">
+        {label}
+      </label>
+    );
   };
+
+   function handleSaveTemplate() {
+    const euroTemplate = {
+      templateName: watch("customerName"),
+      IBAN: watch("IBAN"),
+      customerName: watch("customerName"),
+      customerAddress: watch("address"),
+      customerZipcode: watch("customerZipcode"),
+      customerCity: watch("city"),
+      customerCountry: watch("countryOfIssue"),
+      swift: watch("swift"),
+      bankName: watch("bankName"),
+      bankAddress: watch("bankAddress"),
+      bankLocation: watch("bankLocation"),
+      bankCountry: watch("bankCountry"),
+      description: watch("description"),
+      reference: watch("reference"),
+    };
+  }
 
   return (
     <div>
       <div className="">
-        {!tfaEnabled && (
-          <WarningMsg
-            element={<span>Please enable two factor authentication</span>}
-            handleClickText={"Enable Now"}
-            handleClick={() => {
-              void Router.push("/app/profile");
-            }}
-          />
-        )}
-        <p className="my-4 text-center text-base font-semibold">
-          CREATE A NEW TRANSFER
-        </p>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="mx-auto max-w-xl space-y-4">
-            <div className="flex flex-col gap-2 rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)]">
-              <div className=" ">
-                <p className=" py-1">From</p>
-                <Controller
-                  control={control}
-                  name="assetId"
-                  rules={{
-                    required: "Please select an asset",
-                  }}
-                  render={({
-                    field: { value, onChange },
-                    fieldState: { error },
-                  }) => (
-                    <Fragment>
-                      <Autocomplete
-                        size="small"
-                        options={filterdAssets}
-                        onChange={(_, nextValue) => {
-                          onChange(nextValue?.fireblockAssetId ?? ""),
-                            setValue("whitelistId", "");
-                        }}
-                        getOptionLabel={(option) => option.name}
-                        renderOption={(props, option) => (
-                          <li
-                            {...props}
-                            className="flex cursor-pointer items-center gap-2 p-2"
-                          >
-                            <Image
-                              src={option.icon ?? ""}
-                              alt={option.name}
-                              width={30}
-                              height={30}
-                            />
-                            {option.name}
-                          </li>
-                        )}
-                        renderInput={(params) => (
-                          <TextField
-                            className=" flex items-center gap-2 bg-[#ffffff] "
-                            {...params}
-                            placeholder="Select currency"
-                            InputProps={{
-                              ...params.InputProps,
-                              startAdornment: (() => {
-                                const assetValue = assets?.find(
-                                  (item) => item.fireblockAssetId === value,
-                                );
-                                return (
-                                  <Fragment>
-                                    {assetValue && (
-                                      <Image
-                                        className="ml-2 h-5 w-4"
-                                        src={assetValue?.icon ?? ""}
-                                        alt={assetValue?.name}
-                                        width={80}
-                                        height={80}
-                                      />
-                                    )}
-                                    {params.InputProps.startAdornment}
-                                  </Fragment>
-                                );
-                              })(),
-                            }}
-                            variant="outlined"
-                          />
-                        )}
-                      />
-                      <p className="text-sm text-red-500">{error?.message}</p>
-                    </Fragment>
-                  )}
-                />
-              </div>
-
-              <div className=" ">
-                <div className="flex justify-between">
-                  <p className="pt-1">To</p>
-
+        <form onSubmit={handleSubmit(onSubmit)} className="h-full">
+          <div className="flex h-full flex-col justify-center gap-4 md:flex-row py-4">
+            {/* First Column */}
+            <div className="h-full w-full max-w-xl md:w-[50%]">
+              <div className="flex h-full flex-col gap-2 rounded bg-white p-8 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)]">
+                <div className="mt-3">
                   <Controller
-                    name="addressType"
                     control={control}
-                    render={({ field: { onChange, value } }) => (
-                      <div className="flex">
-                        <ul
-                          onClick={() => onChange("ONETIME")}
-                          className={`cursor-pointer list-inside rounded p-2 ${
-                            value === "WHITELIST"
-                              ? "text-[#BABABA]"
-                              : "list-disc rounded bg-[#99B2C636] font-semibold text-[#217EFD]"
-                          } `}
-                        >
-                          <li className=" text-sm xl:text-base ">
-                            One time address
-                          </li>
-                        </ul>
-                        <ul
-                          onClick={() => onChange("WHITELIST")}
-                          className={`cursor-pointer list-inside rounded   p-2 ${
-                            value === "ONETIME"
-                              ? "text-[#BABABA]"
-                              : "list-disc rounded bg-[#99B2C636] font-semibold text-[#217EFD]"
-                          } `}
-                        >
-                          <li className="text-sm xl:text-base ">
-                            White listed address
-                          </li>
-                        </ul>
-                      </div>
-                    )}
-                  />
-                </div>
-
-                {currentAddressType === "ONETIME" ? (
-                  <Controller
-                    name="oneTimeAddress"
-                    control={control}
+                    name="assetId"
                     rules={{
-                      required: "Please enter the destination address",
+                      required: "Please select an asset",
                     }}
                     render={({
-                      field: { onChange, value },
+                      field: { value, onChange },
                       fieldState: { error },
                     }) => (
                       <Fragment>
-                        <TextField
+                        {/* Label outside the input field */}
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                          Whitelisted address
+                        </label>
+
+                        <Autocomplete
                           size="small"
-                          fullWidth
-                          onChange={onChange}
-                          value={value}
-                          placeholder="Enter Address"
-                          variant="outlined"
+                          options={filteredAssets}
+                          onChange={(_, nextValue) => {
+                            onChange(nextValue?.fireblockAssetId ?? ""),
+                              setValue("whitelistId", "");
+                          }}
+                          value={assetValue ? assetValue : null}
+                          getOptionLabel={(option) => {
+                            return option.name ? option.name : value;
+                          }}
+                          renderOption={(props, option) => (
+                            <li
+                              {...props}
+                              className="flex cursor-pointer items-center gap-2 p-2"
+                            >
+                              <Image
+                                src={option.icon ?? ""}
+                                alt={option.name}
+                                width={30}
+                                height={30}
+                              />
+                              {option.name}
+                            </li>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              className="flex items-center gap-2 bg-[#ffffff]"
+                              {...params}
+                              InputProps={{
+                                ...params.InputProps,
+                                startAdornment: (() => {
+                                  return (
+                                    <Fragment>
+                                      {assetValue && (
+                                        <Image
+                                          className="ml-2 h-5 w-4"
+                                          src={assetValue?.icon ?? ""}
+                                          alt={assetValue?.name}
+                                          width={80}
+                                          height={80}
+                                        />
+                                      )}
+                                    </Fragment>
+                                  );
+                                })(),
+                              }}
+                              variant="outlined"
+                            />
+                          )}
                         />
                         <p className="text-sm text-red-500">{error?.message}</p>
                       </Fragment>
                     )}
                   />
-                ) : (
-                  currentAddressType === "WHITELIST" && (
+                </div>
+                <div className="border-b-2 pb-4 pt-6">
+                  <p className=" font-bold">Add Beneficiary Details</p>
+                </div>
+                <div className="pt-4">
+                  <LabelName name="IBAN" label="IBAN*"></LabelName>
+                  <div className="flex flex-col">
                     <Controller
-                      name="whitelistId"
+                      name="IBAN"
                       control={control}
                       rules={{
-                        required: "Please select whitelisted address",
+                        required: "Please enter IBAN",
                       }}
                       render={({
                         field: { onChange, value },
                         fieldState: { error },
                       }) => (
                         <Fragment>
-                          <Autocomplete
+                          <TextField
+                            type="text"
                             size="small"
-                            options={whitelistOptions}
-                            onChange={(_, addressId) => {
-                              onChange(addressId?.id);
-                              // setValue("whitelistId", addressId?.assetAddress);
-                            }}
-                            value={whitelistedAddress.find(
-                              (item) => item?.id == value,
-                            )}
-                            getOptionLabel={(option) => option.label}
-                            renderOption={(props, option) => (
-                              <li {...props}>{option.label}</li>
-                            )}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                placeholder="Select Whitelisted address"
-                                variant="outlined"
-                              />
-                            )}
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
                           />
                           <p className="text-sm text-red-500">
                             {error?.message}
@@ -481,144 +455,452 @@ const CryptoWithdrawal = () => {
                         </Fragment>
                       )}
                     />
-                  )
-                )}
-              </div>
-
-              <div className="">
-                <div>
-                  <p className="mb-1">Net amount</p>
-                  <Controller
-                    name="amount"
-                    control={control}
-                    rules={{
-                      required: "Please enter the amount",
-                      max: {
-                        value: assetBalance?.balance ?? 0,
-                        message: "Amount cannot be more than balance",
-                      },
-                      validate: (amount) =>
-                        parseFloat(amount) > 0
-                          ? undefined
-                          : "Amount cannot be zero or less than zero",
-                    }}
-                    render={({
-                      field: { onChange, value },
-                      fieldState: { error },
-                    }) => (
-                      <Fragment>
-                        <TextField
-                          type="number"
-                          size="small"
-                          fullWidth
-                          onChange={onChange}
-                          value={value ?? ""}
-                          placeholder="Amount"
-                          variant="outlined"
-                          disabled={isMax}
-                        />
-                        <p className="text-sm text-red-500">{error?.message}</p>
-                      </Fragment>
-                    )}
-                  />
+                  </div>
                 </div>
-                <div className="ml-1 mt-4 flex w-fit items-center gap-2">
-                  <input
-                    {...register("isMax", {
-                      onChange: (event: ChangeEvent<HTMLInputElement>) => {
-                        setValue(
-                          "amount",
-                          event.target?.checked
-                            ? String(assetBalance?.balance) ?? "0"
-                            : "0",
-                        );
-                      },
-                    })}
-                    className=" mt-1 scale-150"
-                    type="checkbox"
-                    id="max"
-                  />
-                  <label
-                    className="text-md font-bold text-[#6E6E6E]"
-                    htmlFor="max"
-                  >
-                    Max{" "}
-                    {assetBalance?.balance
-                      ? `${Number(assetBalance?.balance).toFixed(6) ?? 0} ${
-                          assetBalance?.name ?? ""
-                        }`
-                      : 0}
-                  </label>
-                </div>
-              </div>
 
-              <div>
-                <p className="">Description</p>
-                <Controller
-                  name="description"
-                  control={control}
-                  render={({ field: { onChange, value } }) => (
-                    <Fragment>
-                      <textarea
-                        className="mt-2 w-full resize-none rounded-md px-4 py-2 outline outline-1 outline-[#c4c4c4]  placeholder:font-normal"
-                        placeholder={"Note text"}
-                        rows={1}
-                        value={value ?? ""}
-                        onChange={onChange}
+                {/* customer name */}
+                <div className="pt-4">
+                  <LabelName name="customerName" label="Customer name*"></LabelName>
+                  <div className="flex flex-col">
+                    <Controller
+                      name="customerName"
+                      control={control}
+                      rules={{
+                        required: "Please enter company name",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <TextField
+                            type="text"
+                            size="small"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* customer address */}
+                <div className="pt-4">
+                  <LabelName name="customerAddress" label="Customer address*"></LabelName>
+                  <div className="flex flex-col">
+                    <Controller
+                      name="customerAddress"
+                      control={control}
+                      rules={{
+                        required: "Please enter company address",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <TextField
+                            type="text"
+                            size="small"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                  {/* Zip code  */}
+                  <div className="pt-4">
+                    <LabelName name="Zipcode" label="Zip code*"></LabelName>
+                    <div className="flex flex-col">
+                      <Controller
+                        name="Zipcode"
+                        control={control}
+                        rules={{
+                          required: "Please enter zipcode",
+                        }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <TextField
+                              type="text"
+                              size="small"
+                              fullWidth
+                              onChange={onChange}
+                              value={value ? value : ""}
+                              variant="outlined"
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
                       />
-                    </Fragment>
-                  )}
-                />
+                    </div>
+                  </div>
+
+                  {/* Customer city*  */}
+                  <div className="pt-4">
+                    <div className="flex flex-col ">
+                      <LabelName
+                        name="Customercity"
+                        label="Customer city*"
+                      ></LabelName>
+
+                      <Controller
+                        name="Customercity"
+                        control={control}
+                        rules={{
+                          required: "Please enter customer city",
+                        }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <TextField
+                              type="text"
+                              size="small"
+                              fullWidth
+                              onChange={onChange}
+                              value={value ? value : ""}
+                              variant="outlined"
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* country */}
+                <div className="pt-4">
+                  <LabelName name="Country" label="Country*"></LabelName>
+                  <div className="flex flex-col">
+                    <Controller
+                      name="Country"
+                      control={control}
+                      rules={{
+                        required: "Please enter country",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <TextField
+                            type="text"
+                            size="small"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Reference */}
+                <div className="pt-4">
+                  <LabelName name="Reference" label="Reference"></LabelName>
+                  <div className="flex flex-col">
+                    <Controller
+                      name="Reference"
+                      control={control}
+                      rules={{
+                        required: "Please enter Reference",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <TextField
+                            type="text"
+                            size="small"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Description */}
+                <div className="pt-4">
+                  <LabelName name="Description" label="Description"></LabelName>
+                  <div className="flex flex-col">
+                    <Controller
+                      name="Description"
+                      control={control}
+                      rules={{
+                        required: "Please enter Description",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <TextField
+                            type="text"
+                            size="small"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="border-b-2 pb-4 pt-6">
+                  <p className="text-[#919191] ">Bank Info</p>
+                </div>
+
+                <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                  {/* Zip code  */}
+                  <div className="pt-4">
+                    <LabelName name="swiftBic" label="Swift/Bic*"></LabelName>
+                    <div className="flex flex-col">
+                      <Controller
+                        name="swiftBic"
+                        control={control}
+                        rules={{
+                          required: "Please enter Swift/Bic",
+                        }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <TextField
+                              type="text"
+                              size="small"
+                              fullWidth
+                              onChange={onChange}
+                              value={value ? value : ""}
+                              variant="outlined"
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer city*  */}
+                  <div className="pt-4">
+                    <div className="flex flex-col ">
+                      <LabelName
+                        name="Bankname"
+                        label="Bank name*"
+                      ></LabelName>
+
+                      <Controller
+                        name="Bankname"
+                        control={control}
+                        rules={{
+                          required: "Please enter Bank name",
+                        }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <TextField
+                              type="text"
+                              size="small"
+                              fullWidth
+                              onChange={onChange}
+                              value={value ? value : ""}
+                              variant="outlined"
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bank Address */}
+                <div className="pt-4">
+                  <LabelName name="Bankaddress" label="Bank address*"></LabelName>
+                  <div className="flex flex-col">
+                    <Controller
+                      name="Bankaddress"
+                      control={control}
+                      rules={{
+                        required: "Please enter Bank address",
+                      }}
+                      render={({
+                        field: { onChange, value },
+                        fieldState: { error },
+                      }) => (
+                        <Fragment>
+                          <TextField
+                            type="text"
+                            size="small"
+                            fullWidth
+                            onChange={onChange}
+                            value={value ? value : ""}
+                            variant="outlined"
+                          />
+                          <p className="text-sm text-red-500">
+                            {error?.message}
+                          </p>
+                        </Fragment>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                  {/* Zip code  */}
+                  <div className="pt-4">
+                    <LabelName name="Banklocation" label="Bank Location*"></LabelName>
+                    <div className="flex flex-col">
+                      <Controller
+                        name="Banklocation"
+                        control={control}
+                        rules={{
+                          required: "Please enter Bank Location",
+                        }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <TextField
+                              type="text"
+                              size="small"
+                              fullWidth
+                              onChange={onChange}
+                              value={value ? value : ""}
+                              variant="outlined"
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Customer city*  */}
+                  <div className="pt-4">
+                    <div className="flex flex-col ">
+                      <LabelName
+                        name="bankcountry"
+                        label="Country*"
+                      ></LabelName>
+
+                      <Controller
+                        name="bankcountry"
+                        control={control}
+                        rules={{
+                          required: "Please enter Country",
+                        }}
+                        render={({
+                          field: { onChange, value },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <TextField
+                              type="text"
+                              size="small"
+                              fullWidth
+                              onChange={onChange}
+                              value={value ? value : ""}
+                              variant="outlined"
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="text-center mt-6">
+                  <MuiButton
+                    padding="6px 40px"
+                    name={"Create template"}
+                    onClick={() => setPopupState(true)}
+                  />
+                </div>
               </div>
-              <div className="mx-auto w-fit ">
-                <MuiButton
-                  name={"Create transfer"}
-                  type="submit"
-                  width="100%"
-                  loading={isSubmitting}
-                />
+            </div>
+
+            {/* Second Column */}
+            <div className=" w-full md:w-[50%] min-h-[600px]">
+              <div className="min-h-[600px] w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)]">
+                {/* Content for the second column */}
+                <div className="border-b-2 pb-4 pt-6">
+                  <p className=" font-bold">White listed addresses</p>
+                </div>
               </div>
             </div>
           </div>
         </form>
-
-        <TransitionDialog open={!!popupState} onClose={() => setPopupState("")}>
-          {popupState === "CONFIRM" ? (
-            <ConfirmDailog
-              assetAddress={
-                transaction.data.addressType === "ONETIME"
-                  ? transaction.data.oneTimeAddress
-                  : whitelistOptions.find(
-                      (item) => item.id === transaction.data.whitelistId,
-                    )?.assetAddress
-              }
-              label={
-                transaction.data.addressType === "WHITELIST"
-                  ? whitelistOptions.find(
-                      (item) => item.id === transaction.data.whitelistId,
-                    )?.label
-                  : ""
-              }
-              amount={transaction?.fee}
-              onClose={() => {
-                setPopupState("");
-              }}
-              onConfirm={() => {
-                setPopupState("2FA");
-              }}
-            />
-          ) : (
-            popupState === "2FA" && (
-              <TwoFA
-                onClose={() => {
-                  setPopupState("");
-                }}
-                onSubmit={on2FASubmit}
-              />
-            )
-          )}
-        </TransitionDialog>
       </div>
+
+       {/* Popup Dialog */}
+       <ConfirmDailog
+                open={popupState}
+                onClose={() => setPopupState(false)}
+                onConfirm={handleTwofa}
+            />
+            {/* 2FA Popup */}
+            {twoFAPopupState && (
+                <TransitionDialog open={!!twoFAPopupState} onClose={() => setTwoFAPopupState(false)}>
+                    <TwoFA
+                        onClose={() => setTwoFAPopupState(false)}
+                        onSubmit={handleTwoFASubmit} // Handle 2FA submission logic here
+                    />
+                </TransitionDialog>
+            )}
     </div>
   );
 };
