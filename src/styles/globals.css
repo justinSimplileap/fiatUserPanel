@@ -46,6 +46,12 @@ input[type="number"] {
   }
 }
 
+.acc-style
+.css-1elwnq4-MuiPaper-root-MuiAccordion-root:before {
+  position: unset;
+}
+
+
 /* .gradientCard {
   background: linear-gradient(280.63deg, #0e2a53 0.93%, #010f23 100%),
     linear-gradient(0deg, rgba(160, 160, 160, 0), rgba(160, 160, 160, 0));

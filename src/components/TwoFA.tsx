@@ -37,7 +37,7 @@ const TwoFA: FC<TwoFAProps> = ({ onClose, onSubmit }) => {
         </p>
       </div>
       <div className="flex flex-col items-center justify-between gap-4 border-b-2 border-[#DFDDDD] py-4 md:flex-row">
-        <Image src={Sheld as StaticImageData} alt="Sheld" />
+        <Image src={Sheld as StaticImageData} alt="Sheld" className="md:h-[100%]  h-[120px]" />
         <div>
           <p className=" text-lg font-semibold">
             Enter your

@@ -56,24 +56,24 @@ const ConfirmDailog: FC<ConfirmTemplateProps> = ({
                 {/* Payment Details */}
                 <h3 className="my-4 font-medium">Payment Details</h3>
                 <Grid container spacing={2}>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>From</strong> <p>true</p>
                     </Grid>
 
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Amount</strong> <p>true</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Fee</strong> <p>No fee</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Description</strong> <p>{"Description"}</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Created on</strong> <p>true</p>
                     </Grid>
 
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Last Modified on</strong> <p>true</p>
                     </Grid>
                 </Grid>
@@ -81,13 +81,13 @@ const ConfirmDailog: FC<ConfirmTemplateProps> = ({
                 {/* Documents */}
                 <h3 className="my-4 font-medium">Documents</h3>
                 <Grid container spacing={2}>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} md={6}>
                         <div className="flex items-center rounded bg-slate-100 p-2">
                             <Image src={file} alt="Document 1" />
                             <p className="ml-2">Document1.docx</p>
                         </div>
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12} md={6}>
                         <div className="flex items-center rounded bg-slate-100 p-2">
                             <Image src={file} alt="Document 2" />
                             <p className="ml-2">Document2.docx</p>
@@ -101,28 +101,28 @@ const ConfirmDailog: FC<ConfirmTemplateProps> = ({
                 </Box>
                 <h3 className="my-4 font-medium">Beneficiary Details</h3>
                 <Grid container spacing={2} className="mt-2">
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>IBAN</strong> <p>true</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Customer Name </strong> <p>Address</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Address </strong> <p>Address</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Zip code</strong> <p>586209</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>City</strong> <p>*****</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Country</strong> <p>USA</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Description</strong> <p>1225221</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Reference</strong>
                         <p>Texas</p>
                     </Grid>
@@ -134,19 +134,19 @@ const ConfirmDailog: FC<ConfirmTemplateProps> = ({
                 </Box>
                 <h3 className="my-4 font-medium">Beneficiary Bank</h3>
                 <Grid container spacing={2}>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Swift/Bic</strong> <p>true</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Bank Name</strong> <p>IBAN</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Bank Address</strong> <p>Address</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Bank Location</strong> <p>USA</p>
                     </Grid>
-                    <Grid item xs={6} className="grid grid-cols-2">
+                    <Grid item xs={12} md={6} className="md:grid grid-cols-2 justify-between flex">
                         <strong>Country</strong> <p>USA</p>
                     </Grid>
                 </Grid>

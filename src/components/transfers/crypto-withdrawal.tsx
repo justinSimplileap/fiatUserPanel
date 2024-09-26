@@ -8,52 +8,36 @@ import {
 } from "react";
 import {
   Autocomplete,
-  Box,
-  Dialog,
-  DialogContent,
-  DialogContentText,
   TextField,
+  useMediaQuery,
 } from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import MuiButton from "~/components/MuiButton";
 import Image, { type StaticImageData } from "next/image";
 import TransitionDialog from "../common/TransitionDialog";
 import TwoFA from "../TwoFA";
 import useAsyncMasterStore from "~/hooks/useAsyncMasterStore";
 import useGlobalStore from "~/store/useGlobalStore";
 import {
-  createTransaction,
   getLimits,
   getEuroTemplates,
-  getTransactionFee,
 } from "~/service/api/transaction";
 import toast from "react-hot-toast";
 import useDashboard from "~/hooks/useDashboard";
-import WarningMsg from "../common/WarningMsg";
 import Router, { useRouter } from "next/router";
 import ConfirmDailog from "./confirmDailog";
 import { ApiHandler } from "~/service/UtilService";
 import {
   SendEuroMail,
-  SendOTCTradeMail,
   createTransfer,
-  fetchTransaferFeesApi,
-  saveEuroTemplate,
 } from "~/service/ApiRequests";
-import ExchangeDropdown from "../common/ExchangeDropdown";
-import { CountryListType, DropDownOptionsType } from "~/types/Common";
-import Close from "~/assets/general/close.svg";
-import SelectComponent from "../common/SelectComponent";
 import {
   changeName,
   coinForKrakenName,
-  dateValidation,
-  formatDate,
 } from "~/helpers/helper";
 import localStorageService from "~/service/LocalstorageService";
-import Button from "../common/Button";
 import { getTransferFeesByPricelistId } from "~/service/api/pricelists";
 import CryptoTable from "./crypto-table";
+import DownArrow from "../../assets/general/arrow_down.svg"
 
 const WithdrawalInit: CryptoWithdrawalForm = {
   assetId: "",
@@ -102,19 +86,11 @@ interface Template {
   templateName: string;
 }
 
-interface TransactionConfirmData {
-  clientName: string;
-  contactPerson: string;
-  date: string;
-  fromCurrency: string;
-  amount?: string;
-  accountNumber?: string;
-}
-
 const CryptoWithdrawal = () => {
   const dashboard = useGlobalStore((state) => state.dashboard);
   const router = useRouter();
   const countryList = useAsyncMasterStore<"country">("country");
+
 
   // Accessing router properties
   const { pathname, query, asPath } = router;
@@ -163,6 +139,7 @@ const CryptoWithdrawal = () => {
     if (user.priceList) {
       getUserPriceList(user.priceList);
     }
+    console.log("countryList", countryList)
   }, []);
 
   const assetId = watch("assetId");
@@ -179,6 +156,7 @@ const CryptoWithdrawal = () => {
   const [euroTemplates, setEuroTemplates] = useState<EuroMail[]>();
   const [adminEmail, setAdminEmail] = useState("");
   const [otcConfirmData, setOtcConfirmData] = useState<any>();
+  const isSmallScreen = useMediaQuery("(max-width:1200px)");
 
   useEffect(() => {
     // Check if there is data in verificationStatus.isUserVerified
@@ -406,7 +384,7 @@ const CryptoWithdrawal = () => {
     );
   };
 
-   function handleSaveTemplate() {
+  function handleSaveTemplate() {
     const euroTemplate = {
       assetId: watch("assetId"),
       from: watch("from"),
@@ -431,15 +409,15 @@ const CryptoWithdrawal = () => {
   return (
     <div>
       <div className="">
-        <p className="mt-8 mb-3 text-center text-base font-semibold">
+        <p className="lg:mt-8 mt-4 mb-3 text-center text-base font-semibold">
           CREATE A NEW TRANSFER
         </p>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col justify-center gap-4 md:flex-row">
-            <div className={`${`w-full md:w-[34%]`} max-w-xl `}>
+            <div className={`${`w-full lg:w-[34%] md:w-full`}  `}>
               <div className="flex flex-col gap-2 rounded bg-white p-6 pb-16 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] ">
-                <div className="border-b-2 pb-4 flex content-between items-center ">
-                  <p className="font-bold me-5">Basic Details</p>
+                <div className="border-b-2 pb-4 lg:flex lg:content-between lg:items-center">
+                  <p className="font-bold me-5 lg:pb-0 pb-3">Basic Details</p>
                   <Controller
                     control={control}
                     name="assetId"
@@ -452,12 +430,12 @@ const CryptoWithdrawal = () => {
                     }) => (
                       <Fragment>
                         <Autocomplete
-                          size="medium"
-                          className="w-[70%] "
+                          size={isSmallScreen ? "small" : "medium"}
+                          className="lg:w-[70%]"
                           options={filteredAssets}
                           onChange={(_, nextValue) => {
-                            onChange(nextValue?.fireblockAssetId ?? ""),
-                              setValue("whitelistId", "");
+                            onChange(nextValue?.fireblockAssetId ?? "");
+                            setValue("whitelistId", "");
                           }}
                           value={assetValue ? assetValue : null}
                           getOptionLabel={(option) => {
@@ -479,26 +457,35 @@ const CryptoWithdrawal = () => {
                           )}
                           renderInput={(params) => (
                             <TextField
-                              className=" flex items-center gap-2 bg-[#ffffff] "
+                              className="flex items-center gap-2 bg-[#ffffff]"
                               {...params}
                               placeholder="Select Templates"
                               InputProps={{
                                 ...params.InputProps,
-                                startAdornment: (() => {
-                                  return (
-                                    <Fragment>
-                                      {assetValue && (
-                                        <Image
-                                          className="ml-2 h-5 w-4"
-                                          src={assetValue?.icon ?? ""}
-                                          alt={assetValue?.name}
-                                          width={80}
-                                          height={80}
-                                        />
-                                      )}
-                                    </Fragment>
-                                  );
-                                })(),
+                                startAdornment: assetValue && (
+                                  <Image
+                                    className="ml-2 h-5 w-4"
+                                    src={assetValue?.icon ?? ""}
+                                    alt={assetValue?.name}
+                                    width={80}
+                                    height={80}
+                                  />
+                                ),
+                                endAdornment: (
+                                  <Fragment>
+                                    <Image
+                                      className="md:h-2 md:w-3 h-2 w-2"
+                                      src={DownArrow}
+                                      alt="down arrow"
+                                      width={10}
+                                      height={6}
+                                      style={{ padding: '0', marginRight: '0px' }}
+                                    />
+                                  </Fragment>
+                                ),
+                                sx: {
+                                  paddingRight: '15px !important',
+                                },
                               }}
                               variant="outlined"
                             />
@@ -527,11 +514,11 @@ const CryptoWithdrawal = () => {
                         </label>
 
                         <Autocomplete
-                          size="medium"
+                          size={isSmallScreen ? "small" : "medium"}
                           options={filteredAssets}
                           onChange={(_, nextValue) => {
-                            onChange(nextValue?.fireblockAssetId ?? ""),
-                              setValue("whitelistId", "");
+                            onChange(nextValue?.fireblockAssetId ?? "");
+                            setValue("whitelistId", "");
                           }}
                           value={assetValue ? assetValue : null}
                           getOptionLabel={(option) => {
@@ -555,34 +542,43 @@ const CryptoWithdrawal = () => {
                             <TextField
                               className="flex items-center gap-2 bg-[#ffffff]"
                               {...params}
+                              placeholder="Select From"
                               InputProps={{
                                 ...params.InputProps,
-                                startAdornment: (() => {
-                                  return (
-                                    <Fragment>
-                                      {assetValue && (
-                                        <Image
-                                          className="ml-2 h-5 w-4"
-                                          src={assetValue?.icon ?? ""}
-                                          alt={assetValue?.name}
-                                          width={80}
-                                          height={80}
-                                        />
-                                      )}
-                                    </Fragment>
-                                  );
-                                })(),
+                                startAdornment: assetValue && (
+                                  <Image
+                                    className="ml-2 h-5 w-4"
+                                    src={assetValue?.icon ?? ""}
+                                    alt={assetValue?.name}
+                                    width={80}
+                                    height={80}
+                                  />
+                                ),
+                                endAdornment: (
+                                  <Fragment>
+                                    <Image
+                                      className="md:h-3 md:w-3 h-2 w-2"
+                                      src={DownArrow}
+                                      alt="down arrow"
+                                      width={12}
+                                      height={8}
+                                      style={{ padding: '0', marginRight: '0px' }} // Adjust padding here
+                                    />
+                                  </Fragment>
+                                ),
+                                sx: {
+                                  paddingRight: '15px !important', // Remove the right padding applied by default
+                                },
                               }}
                               variant="outlined"
                             />
                           )}
                         />
-                        <p className="text-sm text-red-500">
-                          {error?.message}
-                        </p>
+                        <p className="text-sm text-red-500">{error?.message}</p>
                       </Fragment>
                     )}
                   />
+
                 </div>
 
                 <div>
@@ -616,7 +612,7 @@ const CryptoWithdrawal = () => {
                                 document?.activeElement as HTMLInputElement
                               )?.blur()
                             }
-                            size="medium"
+                            size={isSmallScreen ? "small" : "medium"}
                             fullWidth
                             onChange={onChange}
                             value={value ? value : ""}
@@ -665,7 +661,7 @@ const CryptoWithdrawal = () => {
                     control={control}
                     name="paymentSystem"
                     rules={{
-                      required: "Please select an payment system",
+                      required: "Please select a payment system",
                     }}
                     render={({
                       field: { value, onChange },
@@ -678,11 +674,11 @@ const CryptoWithdrawal = () => {
                         </label>
 
                         <Autocomplete
-                          size="medium"
+                          size={isSmallScreen ? "small" : "medium"}
                           options={filteredAssets}
                           onChange={(_, nextValue) => {
-                            onChange(nextValue?.fireblockAssetId ?? ""),
-                              setValue("whitelistId", "");
+                            onChange(nextValue?.fireblockAssetId ?? "");
+                            setValue("whitelistId", "");
                           }}
                           value={assetValue ? assetValue : null}
                           getOptionLabel={(option) => {
@@ -709,35 +705,43 @@ const CryptoWithdrawal = () => {
                               placeholder="Select currency"
                               InputProps={{
                                 ...params.InputProps,
-                                startAdornment: (() => {
-                                  return (
-                                    <Fragment>
-                                      {assetValue && (
-                                        <Image
-                                          className="ml-2 h-5 w-4"
-                                          src={assetValue?.icon ?? ""}
-                                          alt={assetValue?.name}
-                                          width={80}
-                                          height={80}
-                                        />
-                                      )}
-                                    </Fragment>
-                                  );
-                                })(),
+                                startAdornment: assetValue && (
+                                  <Image
+                                    className="ml-2 h-5 w-4"
+                                    src={assetValue?.icon ?? ""}
+                                    alt={assetValue?.name}
+                                    width={80}
+                                    height={80}
+                                  />
+                                ),
+                                endAdornment: (
+                                  <Fragment>
+                                    <Image
+                                      className="md:h-3 md:w-3 h-2 w-2"
+                                      src={DownArrow}
+                                      alt="down arrow"
+                                      width={12}
+                                      height={8}
+                                      style={{ padding: '0', marginRight: '0px' }} // Adjust padding
+                                    />
+                                  </Fragment>
+                                ),
+                                sx: {
+                                  paddingRight: '15px !important', // Remove extra padding
+                                },
                               }}
                               variant="outlined"
                             />
                           )}
                         />
-                        <p className="text-sm text-red-500">
-                          {error?.message}
-                        </p>
+                        <p className="text-sm text-red-500">{error?.message}</p>
                       </Fragment>
                     )}
                   />
+
                 </div>
               </div>
-              <div className="flex flex-col gap-2 rounded  bg-[#C1902D1F]  shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] mt-6 px-12 py-12">
+              <div className="flex flex-col gap-2 rounded  bg-[#C1902D1F]  shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:mt-6 mt-4 md:px-12 md:py-12 px-6">
                 <div className="flex justify-between text-base font-bold py-3">
                   <span>Transfers</span>
                   <span>0</span>
@@ -753,13 +757,13 @@ const CryptoWithdrawal = () => {
                 </div>
               </div>
             </div>
-            <div className=" w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:w-[64%]">
+            <div className=" w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] lg:w-[64%] md:w-full">
               <div className="w-full">
                 <div className="border-b-2 py-2">
                   <p className=" mb-4 font-bold">Enter Beneficiary Details</p>
                 </div>
                 <div className="w-full">
-                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                     <div className=" text-base  md:col-span-2 pt-4">
                       <label
                         className="text-base text-[#6E6E6E]"
@@ -770,7 +774,7 @@ const CryptoWithdrawal = () => {
                     </div>
 
                     {/* IBAN  */}
-                    <div className="">
+                    <div className="pt-4">
                       <LabelName name="IBAN" label="IBAN*"></LabelName>
                       <div className="flex flex-col">
                         <Controller
@@ -802,7 +806,7 @@ const CryptoWithdrawal = () => {
                     </div>
 
                     {/* CUSTOMER NAME  */}
-                    <div className="">
+                    <div className="pt-4">
                       <div className="flex flex-col ">
                         <LabelName
                           name="customerName"
@@ -839,7 +843,7 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Test 2 */}
-                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                     {/* Customer address*  */}
                     <div className="pt-4">
                       <LabelName name="customerAddress" label="Customer address*"></LabelName>
@@ -872,7 +876,7 @@ const CryptoWithdrawal = () => {
                       </div>
                     </div>
 
-                    <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                    <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                       {/* Zip code  */}
                       <div className="pt-4">
                         <LabelName name="Zipcode" label="Zip code*"></LabelName>
@@ -944,9 +948,11 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Test 3 */}
-                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-3">
+                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-3">
                     {/* Country*  */}
+
                     <div className="pt-4">
+                      <LabelName name="Country" label="Country*"></LabelName>
                       <Controller
                         control={control}
                         name="Country"
@@ -958,27 +964,19 @@ const CryptoWithdrawal = () => {
                           fieldState: { error },
                         }) => (
                           <Fragment>
-                            {/* Label outside the input field */}
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Country*
-                            </label>
-
                             <Autocomplete
                               size="small"
                               options={filteredAssets}
                               onChange={(_, nextValue) => {
-                                onChange(nextValue?.fireblockAssetId ?? ""),
-                                  setValue("whitelistId", "");
+                                onChange(nextValue?.fireblockAssetId ?? "");
+                                setValue("whitelistId", "");
                               }}
                               value={assetValue ? assetValue : null}
                               getOptionLabel={(option) => {
                                 return option.name ? option.name : value;
                               }}
                               renderOption={(props, option) => (
-                                <li
-                                  {...props}
-                                  className="flex cursor-pointer items-center gap-2 p-2"
-                                >
+                                <li {...props} className="flex cursor-pointer items-center gap-2 p-2">
                                   <Image
                                     src={option.icon ?? ""}
                                     alt={option.name}
@@ -1009,17 +1007,30 @@ const CryptoWithdrawal = () => {
                                         </Fragment>
                                       );
                                     })(),
+                                    endAdornment: (
+                                      <Fragment>
+                                        <Image
+                                          className="md:h-3 md:w-3 h-2 w-2"
+                                          src={DownArrow}
+                                          alt="down arrow"
+                                          width={12}
+                                          height={8}
+                                        />
+                                      </Fragment>
+                                    ),
+                                    sx: {
+                                      paddingRight: '15px !important',
+                                    },
                                   }}
                                   variant="outlined"
                                 />
                               )}
                             />
-                            <p className="text-sm text-red-500">
-                              {error?.message}
-                            </p>
+                            <p className="text-sm text-red-500">{error?.message}</p>
                           </Fragment>
                         )}
                       />
+
                     </div>
 
                     {/* Reference  */}
@@ -1094,8 +1105,8 @@ const CryptoWithdrawal = () => {
                     </div>
                   </div>
 
-                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
-                    <div className=" text-base  md:col-span-2 pt-12">
+                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
+                    <div className=" text-base  md:col-span-2 lg:pt-12 pt-8">
                       <label
                         className="text-base text-[#6E6E6E]"
                         htmlFor="max"
@@ -1207,7 +1218,7 @@ const CryptoWithdrawal = () => {
                     </div>
                   </div>
 
-                  <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                     {/* Bank Location*  */}
                     <div className="pt-4">
                       <LabelName name="Banklocation" label="Bank Location*"></LabelName>
@@ -1240,38 +1251,31 @@ const CryptoWithdrawal = () => {
                       </div>
                     </div>
                     <div className="pt-4">
+                      <LabelName name="Country" label="Country*"></LabelName>
                       <Controller
                         control={control}
                         name="bankCountry"
                         rules={{
-                          required: "Please select bank country",
+                          required: "Please select country",
                         }}
                         render={({
                           field: { value, onChange },
                           fieldState: { error },
                         }) => (
                           <Fragment>
-                            {/* Label outside the input field */}
-                            <label className="mb-2 block text-sm font-medium text-gray-700">
-                              Country*
-                            </label>
-
                             <Autocomplete
                               size="small"
                               options={filteredAssets}
                               onChange={(_, nextValue) => {
-                                onChange(nextValue?.fireblockAssetId ?? ""),
-                                  setValue("whitelistId", "");
+                                onChange(nextValue?.fireblockAssetId ?? "");
+                                setValue("whitelistId", "");
                               }}
                               value={assetValue ? assetValue : null}
                               getOptionLabel={(option) => {
                                 return option.name ? option.name : value;
                               }}
                               renderOption={(props, option) => (
-                                <li
-                                  {...props}
-                                  className="flex cursor-pointer items-center gap-2 p-2"
-                                >
+                                <li {...props} className="flex cursor-pointer items-center gap-2 p-2">
                                   <Image
                                     src={option.icon ?? ""}
                                     alt={option.name}
@@ -1302,14 +1306,26 @@ const CryptoWithdrawal = () => {
                                         </Fragment>
                                       );
                                     })(),
+                                    endAdornment: (
+                                      <Fragment>
+                                        <Image
+                                          className="md:h-3 md:w-3 h-2 w-2"
+                                          src={DownArrow}
+                                          alt="down arrow"
+                                          width={12}
+                                          height={8}
+                                        />
+                                      </Fragment>
+                                    ),
+                                    sx: {
+                                      paddingRight: '15px !important',
+                                    },
                                   }}
                                   variant="outlined"
                                 />
                               )}
                             />
-                            <p className="text-sm text-red-500">
-                              {error?.message}
-                            </p>
+                            <p className="text-sm text-red-500">{error?.message}</p>
                           </Fragment>
                         )}
                       />
@@ -1353,14 +1369,14 @@ const CryptoWithdrawal = () => {
                 transaction.data.addressType === "ONETIME"
                   ? transaction.data.oneTimeAddress
                   : whitelistOptions.find(
-                      (item) => item.id === transaction.data.whitelistId,
-                    )?.assetAddress
+                    (item) => item.id === transaction.data.whitelistId,
+                  )?.assetAddress
               }
               label={
                 transaction.data.addressType === "WHITELIST"
                   ? whitelistOptions.find(
-                      (item) => item.id === transaction.data.whitelistId,
-                    )?.label
+                    (item) => item.id === transaction.data.whitelistId,
+                  )?.label
                   : ""
               }
               amount={transaction?.fee}

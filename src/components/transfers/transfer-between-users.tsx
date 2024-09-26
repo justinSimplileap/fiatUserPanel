@@ -47,6 +47,7 @@ import Image from "next/image";
 import ConfirmDailog from "./create-template-confirm";
 import TransitionDialog from "../common/TransitionDialog";
 import TwoFA from "../TwoFA";
+import DownArrow from "../../assets/general/arrow_down.svg"
 
 const WithdrawalInit: CryptoWithdrawalForm = {
   assetId: "",
@@ -161,14 +162,14 @@ const CryptoWithdrawal = () => {
   const [twoFAPopupState, setTwoFAPopupState] = useState(false);
 
   const handleTwofa = () => {
-      setTwoFAPopupState(true)
-      setPopupState(false)
+    setTwoFAPopupState(true)
+    setPopupState(false)
   }
 
 
   const handleTwoFASubmit = () => {
-      console.log("2FA verified and action authorized!");
-      setTwoFAPopupState(false);
+    console.log("2FA verified and action authorized!");
+    setTwoFAPopupState(false);
   };
 
   useEffect(() => {
@@ -310,7 +311,7 @@ const CryptoWithdrawal = () => {
 
   const paymentSystemList = [{ value: "SEPA", label: "SEPA" }];
 
-  
+
 
   const assetValue = filteredAssets?.find(
     (item) => item.fireblockAssetId === assetId,
@@ -324,7 +325,7 @@ const CryptoWithdrawal = () => {
     );
   };
 
-   function handleSaveTemplate() {
+  function handleSaveTemplate() {
     const euroTemplate = {
       templateName: watch("customerName"),
       IBAN: watch("IBAN"),
@@ -347,10 +348,10 @@ const CryptoWithdrawal = () => {
     <div>
       <div className="">
         <form onSubmit={handleSubmit(onSubmit)} className="h-full">
-          <div className="flex h-full flex-col justify-center gap-4 md:flex-row py-4">
+          <div className="flex h-full flex-col justify-center gap-4 md:flex-row lg:py-4">
             {/* First Column */}
             <div className="h-full w-full max-w-xl md:w-[50%]">
-              <div className="flex h-full flex-col gap-2 rounded bg-white p-8 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)]">
+              <div className="flex h-full flex-col gap-2 rounded bg-white lg:p-8 p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)]">
                 <div className="mt-3">
                   <Controller
                     control={control}
@@ -397,23 +398,33 @@ const CryptoWithdrawal = () => {
                             <TextField
                               className="flex items-center gap-2 bg-[#ffffff]"
                               {...params}
+                              placeholder="Select Templates"
                               InputProps={{
                                 ...params.InputProps,
-                                startAdornment: (() => {
-                                  return (
-                                    <Fragment>
-                                      {assetValue && (
-                                        <Image
-                                          className="ml-2 h-5 w-4"
-                                          src={assetValue?.icon ?? ""}
-                                          alt={assetValue?.name}
-                                          width={80}
-                                          height={80}
-                                        />
-                                      )}
-                                    </Fragment>
-                                  );
-                                })(),
+                                startAdornment: assetValue && (
+                                  <Image
+                                    className="ml-2 h-5 w-4"
+                                    src={assetValue?.icon ?? ""}
+                                    alt={assetValue?.name}
+                                    width={80}
+                                    height={80}
+                                  />
+                                ),
+                                endAdornment: (
+                                  <Fragment>
+                                    <Image
+                                      className="md:h-2 md:w-3 h-2 w-2"
+                                      src={DownArrow}
+                                      alt="down arrow"
+                                      width={8}
+                                      height={6}
+                                      style={{ padding: '0', marginRight: '0px' }}
+                                    />
+                                  </Fragment>
+                                ),
+                                sx: {
+                                  paddingRight: '15px !important',
+                                },
                               }}
                               variant="outlined"
                             />
@@ -427,7 +438,7 @@ const CryptoWithdrawal = () => {
                 <div className="border-b-2 pb-4 pt-6">
                   <p className=" font-bold">Add Beneficiary Details</p>
                 </div>
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="IBAN" label="IBAN*"></LabelName>
                   <div className="flex flex-col">
                     <Controller
@@ -459,7 +470,7 @@ const CryptoWithdrawal = () => {
                 </div>
 
                 {/* customer name */}
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="customerName" label="Customer name*"></LabelName>
                   <div className="flex flex-col">
                     <Controller
@@ -491,7 +502,7 @@ const CryptoWithdrawal = () => {
                 </div>
 
                 {/* customer address */}
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="customerAddress" label="Customer address*"></LabelName>
                   <div className="flex flex-col">
                     <Controller
@@ -522,9 +533,9 @@ const CryptoWithdrawal = () => {
                   </div>
                 </div>
 
-                <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                <div className="grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                   {/* Zip code  */}
-                  <div className="pt-4">
+                  <div className="lg:pt-4 pt-1">
                     <LabelName name="Zipcode" label="Zip code*"></LabelName>
                     <div className="flex flex-col">
                       <Controller
@@ -556,7 +567,7 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Customer city*  */}
-                  <div className="pt-4">
+                  <div className="lg:pt-4 pt-1">
                     <div className="flex flex-col ">
                       <LabelName
                         name="Customercity"
@@ -593,31 +604,84 @@ const CryptoWithdrawal = () => {
                 </div>
 
                 {/* country */}
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="Country" label="Country*"></LabelName>
                   <div className="flex flex-col">
                     <Controller
-                      name="Country"
                       control={control}
+                      name="Country"
                       rules={{
-                        required: "Please enter country",
+                        required: "Please select from",
                       }}
                       render={({
-                        field: { onChange, value },
+                        field: { value, onChange },
                         fieldState: { error },
                       }) => (
                         <Fragment>
-                          <TextField
-                            type="text"
+
+                          <Autocomplete
                             size="small"
-                            fullWidth
-                            onChange={onChange}
-                            value={value ? value : ""}
-                            variant="outlined"
+                            options={filteredAssets}
+                            onChange={(_, nextValue) => {
+                              onChange(nextValue?.fireblockAssetId ?? "");
+                              setValue("whitelistId", "");
+                            }}
+                            value={assetValue ? assetValue : null}
+                            getOptionLabel={(option) => {
+                              return option.name ? option.name : value;
+                            }}
+                            renderOption={(props, option) => (
+                              <li {...props} className="flex cursor-pointer items-center gap-2 p-2">
+                                <Image
+                                  src={option.icon ?? ""}
+                                  alt={option.name}
+                                  width={30}
+                                  height={30}
+                                />
+                                {option.name}
+                              </li>
+                            )}
+                            renderInput={(params) => (
+                              <TextField
+                                className="flex items-center gap-2 bg-[#ffffff]"
+                                {...params}
+                                InputProps={{
+                                  ...params.InputProps,
+                                  startAdornment: (() => {
+                                    return (
+                                      <Fragment>
+                                        {assetValue && (
+                                          <Image
+                                            className="ml-2 h-5 w-4"
+                                            src={assetValue?.icon ?? ""}
+                                            alt={assetValue?.name}
+                                            width={80}
+                                            height={80}
+                                          />
+                                        )}
+                                      </Fragment>
+                                    );
+                                  })(),
+                                  endAdornment: (
+                                    <Fragment>
+                                      <Image
+                                        className="md:h-3 md:w-3 h-2 w-2"
+                                        src={DownArrow}
+                                        alt="down arrow"
+                                        width={12}
+                                        height={8}
+                                      />
+                                    </Fragment>
+                                  ),
+                                  sx: {
+                                    paddingRight: '15px !important',
+                                  },
+                                }}
+                                variant="outlined"
+                              />
+                            )}
                           />
-                          <p className="text-sm text-red-500">
-                            {error?.message}
-                          </p>
+                          <p className="text-sm text-red-500">{error?.message}</p>
                         </Fragment>
                       )}
                     />
@@ -625,7 +689,7 @@ const CryptoWithdrawal = () => {
                 </div>
 
                 {/* Reference */}
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="Reference" label="Reference"></LabelName>
                   <div className="flex flex-col">
                     <Controller
@@ -657,7 +721,7 @@ const CryptoWithdrawal = () => {
                 </div>
 
                 {/* Description */}
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="Description" label="Description"></LabelName>
                   <div className="flex flex-col">
                     <Controller
@@ -692,9 +756,9 @@ const CryptoWithdrawal = () => {
                   <p className="text-[#919191] ">Bank Info</p>
                 </div>
 
-                <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                <div className="grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                   {/* Zip code  */}
-                  <div className="pt-4">
+                  <div className="lg:pt-4 pt-1">
                     <LabelName name="swiftBic" label="Swift/Bic*"></LabelName>
                     <div className="flex flex-col">
                       <Controller
@@ -726,7 +790,7 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Customer city*  */}
-                  <div className="pt-4">
+                  <div className="lg:pt-4 pt-1">
                     <div className="flex flex-col ">
                       <LabelName
                         name="Bankname"
@@ -763,7 +827,7 @@ const CryptoWithdrawal = () => {
                 </div>
 
                 {/* Bank Address */}
-                <div className="pt-4">
+                <div className="lg:pt-4 pt-1">
                   <LabelName name="Bankaddress" label="Bank address*"></LabelName>
                   <div className="flex flex-col">
                     <Controller
@@ -794,9 +858,9 @@ const CryptoWithdrawal = () => {
                   </div>
                 </div>
 
-                <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-2">
+                <div className="grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
                   {/* Zip code  */}
-                  <div className="pt-4">
+                  <div className="lg:pt-4 pt-1">
                     <LabelName name="Banklocation" label="Bank Location*"></LabelName>
                     <div className="flex flex-col">
                       <Controller
@@ -828,7 +892,7 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Customer city*  */}
-                  <div className="pt-4">
+                  <div className="lg:pt-4 pt-1">
                     <div className="flex flex-col ">
                       <LabelName
                         name="bankcountry"
@@ -836,27 +900,80 @@ const CryptoWithdrawal = () => {
                       ></LabelName>
 
                       <Controller
-                        name="bankcountry"
                         control={control}
+                        name="bankCountry"
                         rules={{
-                          required: "Please enter Country",
+                          required: "Please select country",
                         }}
                         render={({
-                          field: { onChange, value },
+                          field: { value, onChange },
                           fieldState: { error },
                         }) => (
                           <Fragment>
-                            <TextField
-                              type="text"
+
+                            <Autocomplete
                               size="small"
-                              fullWidth
-                              onChange={onChange}
-                              value={value ? value : ""}
-                              variant="outlined"
+                              options={filteredAssets}
+                              onChange={(_, nextValue) => {
+                                onChange(nextValue?.fireblockAssetId ?? "");
+                                setValue("whitelistId", "");
+                              }}
+                              value={assetValue ? assetValue : null}
+                              getOptionLabel={(option) => {
+                                return option.name ? option.name : value;
+                              }}
+                              renderOption={(props, option) => (
+                                <li {...props} className="flex cursor-pointer items-center gap-2 p-2">
+                                  <Image
+                                    src={option.icon ?? ""}
+                                    alt={option.name}
+                                    width={30}
+                                    height={30}
+                                  />
+                                  {option.name}
+                                </li>
+                              )}
+                              renderInput={(params) => (
+                                <TextField
+                                  className="flex items-center gap-2 bg-[#ffffff]"
+                                  {...params}
+                                  InputProps={{
+                                    ...params.InputProps,
+                                    startAdornment: (() => {
+                                      return (
+                                        <Fragment>
+                                          {assetValue && (
+                                            <Image
+                                              className="ml-2 h-5 w-4"
+                                              src={assetValue?.icon ?? ""}
+                                              alt={assetValue?.name}
+                                              width={80}
+                                              height={80}
+                                            />
+                                          )}
+                                        </Fragment>
+                                      );
+                                    })(),
+                                    endAdornment: (
+                                      <Fragment>
+                                        <Image
+                                          className="md:h-3 md:w-3 h-2 w-2"
+                                          src={DownArrow}
+                                          alt="down arrow"
+                                          width={12}
+                                          height={8}
+                                        />
+                                      </Fragment>
+                                    ),
+                                    sx: {
+                                      paddingRight: '15px !important',
+                                    },
+                                  }}
+                                  variant="outlined"
+                                />
+                              )}
                             />
-                            <p className="text-sm text-red-500">
-                              {error?.message}
-                            </p>
+                            <p className="text-sm text-red-500">{error?.message}</p>
                           </Fragment>
                         )}
                       />
@@ -886,21 +1003,21 @@ const CryptoWithdrawal = () => {
         </form>
       </div>
 
-       {/* Popup Dialog */}
-       <ConfirmDailog
-                open={popupState}
-                onClose={() => setPopupState(false)}
-                onConfirm={handleTwofa}
-            />
-            {/* 2FA Popup */}
-            {twoFAPopupState && (
-                <TransitionDialog open={!!twoFAPopupState} onClose={() => setTwoFAPopupState(false)}>
-                    <TwoFA
-                        onClose={() => setTwoFAPopupState(false)}
-                        onSubmit={handleTwoFASubmit} // Handle 2FA submission logic here
-                    />
-                </TransitionDialog>
-            )}
+      {/* Popup Dialog */}
+      <ConfirmDailog
+        open={popupState}
+        onClose={() => setPopupState(false)}
+        onConfirm={handleTwofa}
+      />
+      {/* 2FA Popup */}
+      {twoFAPopupState && (
+        <TransitionDialog open={!!twoFAPopupState} onClose={() => setTwoFAPopupState(false)}>
+          <TwoFA
+            onClose={() => setTwoFAPopupState(false)}
+            onSubmit={handleTwoFASubmit} // Handle 2FA submission logic here
+          />
+        </TransitionDialog>
+      )}
     </div>
   );
 };

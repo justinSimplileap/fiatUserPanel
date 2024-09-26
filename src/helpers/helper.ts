@@ -516,37 +516,30 @@ export const cryptoDummyData: CryptoRowData[] = [
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   }, {
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   }, {
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   }, {
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   }, {
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   }, {
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   }, {
     fileName: "Document1.docx",
     fileSize: "28.50 KB",
     date: "16/11/2022",
-    action: "",
   },
 ];
 

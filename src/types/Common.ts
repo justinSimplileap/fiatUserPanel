@@ -79,7 +79,6 @@ type CryptoRowData = {
   fileName: string;
   fileSize: string;
   date: string;
-  action: string;
 };
 
 export type {
