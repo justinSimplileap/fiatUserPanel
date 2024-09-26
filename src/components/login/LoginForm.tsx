@@ -1,37 +1,53 @@
 import Link from "next/link";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { Fragment, useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import ExchangeInput from "../common/ExchangeInput";
 import Button from "../common/Button";
 import toast, { Toaster } from "react-hot-toast";
-import { fetchSecurity, login } from "~/service/ApiRequests";
+import { fetchCountries, fetchSecurity, login } from "~/service/ApiRequests";
 import ErrorResponse from "~/service/ErrorResponse";
 import { useRouter } from "next/router";
 import localStorageService from "~/service/LocalstorageService";
 import useGlobalStore from "~/store/useGlobalStore";
-import { decryptResponse } from "~/helpers/helper";
+import { countryFlags, decryptResponse } from "~/helpers/helper";
 import { ApiHandler } from "~/service/UtilService";
 import MuiButton from "../MuiButton";
 import Image from "next/image";
 import loginicon from "../../assets/auth/login.svg";
 import blktrade from "../../assets/navicons/blktrade.png";
+import { Autocomplete, TextField } from "@mui/material";
+import {
+  DropDownOptionsResponseType,
+  DropDownOptionsType,
+} from "~/types/Common";
 
 interface FormData {
   emailOrPhone: string;
   password: string;
+  countryCode: string;
 }
 
 const LoginForm: React.FC = () => {
-  const { handleSubmit, control, watch } = useForm<FormData>();
+  const {
+    handleSubmit,
+    control,
+    formState: { errors },
+    watch,
+  } = useForm<FormData>({
+    defaultValues: {
+      countryCode: "1",
+    },
+  });
 
   const router = useRouter();
 
   const [showEmailField, setShowEmailField] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<string>("email");
+  const [countryList, setCountryList] = useState<DropDownOptionsType[]>([]);
 
   const admin = useGlobalStore((state) => state.admin);
-
+  const countryId = watch("countryCode");
   const submitData = async (data: FormData) => {
     const { emailOrPhone, password } = data;
     setIsLoading(true);
@@ -156,13 +172,56 @@ const LoginForm: React.FC = () => {
     }
   };
 
-  const onSubmit = (data: FormData) => {
-    data.password && !showEmailField
-      ? submitData(data)
-      : setShowEmailField(false);
+  const onSubmit = async (data: FormData) => {
+    console.log("callled");
+    console.log("showEmailField: ", showEmailField);
+
+    console.log(" data.password: ", data.password);
+    data.password && (await submitData(data));
+  };
+
+  const formattedData = (data: any) => {
+    if (data.length > 0) {
+      const finalList = data.map((val: DropDownOptionsResponseType) => ({
+        value: val.countryCode,
+        label: `+${val.countryCode}`,
+        flag: countryFlags.find(
+          (obj) => obj.countryCode === Number(val.countryCode),
+        )?.flag,
+      }));
+
+      return finalList;
+    }
+  };
+
+  const getCountryList = async () => {
+    const [data] = await ApiHandler(fetchCountries);
+
+    if (data?.success) {
+      const body = data.body as Country[];
+
+      if (body) {
+        body.sort((a, b) => a.countryCode - b.countryCode);
+        setCountryList(formattedData(body));
+      }
+    }
+
+    return [];
   };
 
   const emailOrPhone = watch("emailOrPhone");
+
+  useEffect(() => {
+    getCountryList();
+  }, []);
+
+  const countryValue = countryList?.find(
+    (item) => Number(item.value) === Number(countryId),
+  ) ?? {
+    flag: "https://twemoji.maxcdn.com/2/svg/1f1e8-1f1e6.svg",
+    label: "+1",
+    value: 1,
+  };
 
   return (
     <>
@@ -233,17 +292,114 @@ const LoginForm: React.FC = () => {
                   />
                 </div>
               ) : (
-                <div className="">
-                  <ExchangeInput
-                    control={control}
-                    placeholder="Enter your phone number"
-                    label="Phone Number"
-                    name="emailOrPhone"
-                    type="text"
-                    rules={{
-                      required: "Phone number is required",
-                    }}
-                  />
+                <div className="mt-4">
+                  <label htmlFor="mobileNumber" className="mb-0 block ">
+                    Mobile number
+                  </label>
+                  <div className="flex items-center  ">
+                    <div style={{ height: "100%" }}>
+                      <Controller
+                        control={control}
+                        name="countryCode"
+                        rules={{
+                          required: "Please select an asset",
+                        }}
+                        render={({
+                          field: { value, onChange },
+                          fieldState: { error },
+                        }) => (
+                          <Fragment>
+                            <Autocomplete
+                              size="small"
+                              className="w-[120px]"
+                              options={countryList}
+                              onChange={(_, nextValue) => {
+                                onChange(nextValue?.value ?? "");
+                              }}
+                              disableClearable
+                              value={countryValue ? countryValue : undefined}
+                              renderOption={(props, option) => (
+                                <li
+                                  {...props}
+                                  className="flex cursor-pointer items-center gap-2 p-2"
+                                >
+                                  <Image
+                                    src={option.flag ?? ""}
+                                    alt={option.label}
+                                    width={30}
+                                    height={30}
+                                  />
+                                  {option.label}
+                                </li>
+                              )}
+                              renderInput={(params) => (
+                                <TextField
+                                  className=" flex items-center gap-2  "
+                                  {...params}
+                                  placeholder="Country "
+                                  InputProps={{
+                                    ...params.InputProps,
+                                    startAdornment: (() => {
+                                      return (
+                                        <Fragment>
+                                          {countryValue?.label && (
+                                            <Image
+                                              className="ml-2 h-5 w-4"
+                                              src={countryValue?.flag ?? ""}
+                                              alt={countryValue?.label ?? ""}
+                                              width={30}
+                                              height={30}
+                                            />
+                                          )}
+                                        </Fragment>
+                                      );
+                                    })(),
+                                  }}
+                                  variant="outlined"
+                                />
+                              )}
+                            />
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
+                          </Fragment>
+                        )}
+                      />
+                    </div>
+                    <div className="w-full rounded border border-[#c4c4c4]">
+                      <Controller
+                        name="emailOrPhone"
+                        control={control}
+                        rules={{
+                          required: "Mobile number is required",
+                          pattern: {
+                            value: /^[0-9]*$/,
+                            message:
+                              "Mobile number should contain only numbers",
+                          },
+                          minLength: {
+                            value: 3,
+                            message:
+                              "Mobile number should contain only 10 digits",
+                          },
+                        }}
+                        render={({ field }) => (
+                          <div className="w-1/2">
+                            <input
+                              id="emailOrPhone"
+                              className="rounded-md  px-4 py-2  outline-none placeholder:text-sm placeholder:font-normal"
+                              {...field}
+                              value={field.value || ""}
+                              placeholder="9999 999 999"
+                            />
+                          </div>
+                        )}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-xs text-red-500">
+                    {errors?.emailOrPhone?.message}
+                  </p>
                 </div>
               )}
 
@@ -272,6 +428,7 @@ const LoginForm: React.FC = () => {
                 <MuiButton
                   name="Login"
                   loading={isLoading}
+                  disabled={isLoading}
                   borderColor="black"
                   background="black"
                   color="white"
