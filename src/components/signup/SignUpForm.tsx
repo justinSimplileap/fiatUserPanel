@@ -9,10 +9,7 @@ import useGlobalStore from "~/store/useGlobalStore";
 import { decryptResponse } from "~/helpers/helper";
 import { ApiHandler } from "~/service/UtilService";
 import MuiButton from "../MuiButton";
-import loginicon from "../../assets/auth/login.svg";
 import blktrade from "../../assets/navicons/blktrade.png";
-
-
 
 import { useForm, Controller } from "react-hook-form";
 import ExchangeInput from "../common/ExchangeInput";
@@ -22,7 +19,7 @@ import { Autocomplete, Dialog, TextField } from "@mui/material";
 import Image, { type StaticImageData } from "next/image";
 
 import Close from "~/assets/general/close.svg";
-
+import AuthScreen from "../common/AuthScreen";
 
 interface FormData {
   firstName: string;
@@ -42,7 +39,6 @@ interface SignupFormProps {
   countryList: DropDownOptionsType[];
   legalDocument: LegalDocuments[];
 }
-
 
 const SignupForm: React.FC<SignupFormProps> = ({
   setData,
@@ -99,7 +95,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
   return (
     <>
       <Toaster />
-      <div className="grid h-screen grid-cols-1 bg-white lg:grid-cols-2 p-4">
+      <div className="grid h-screen grid-cols-1 bg-white p-4 lg:grid-cols-2">
         <Dialog
           fullScreen
           open={open === "legalDocPopup"}
@@ -143,7 +139,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
           </div>
         </Dialog>
         {/* Left side: Form */}
-        <div className="m-auto rounded  lg:w-[60%] my-6">
+        <div className="m-auto my-6  rounded lg:w-[60%]">
           <div className="flex flex-col gap-2">
             {/* {admin?.profileImgLink && ( */}
             <div className="logo relative flex items-center justify-center py-1 ">
@@ -157,8 +153,12 @@ const SignupForm: React.FC<SignupFormProps> = ({
               />
             </div>
             {/* )} */}
-            <p className="text-center lg:text-[32px] font-medium text-xl pb-4">Signup</p>
-            <p className="font-medium text-md lg:text-[20px]">Enter basic details</p>
+            <p className="pb-4 text-center text-xl font-medium lg:text-[32px]">
+              Signup
+            </p>
+            {/* <p className="text-md font-medium lg:text-[20px]">
+              Enter basic details
+            </p> */}
 
             <form className="" onSubmit={handleSubmit(onSubmit)}>
               <div className="grid gap-2 lg:grid-cols-2 ">
@@ -204,7 +204,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
               </div>
               <div className="mt-4">
                 <label htmlFor="mobileNumber" className="mb-0 block ">
-                  Mobile number<span className="text-sm text-red-500 ps-1">*</span>
+                  Mobile number
+                  <span className="ps-1 text-sm text-red-500">*</span>
                 </label>
                 <div className="flex items-center  ">
                   <div style={{ height: "100%" }}>
@@ -276,7 +277,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                       )}
                     />
                   </div>
-                  <div className="rounded border border-[#c4c4c4] w-[100%]">
+                  <div className="w-[100%] rounded border border-[#c4c4c4]">
                     <Controller
                       name="mobileNumber"
                       control={control}
@@ -284,8 +285,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         required: "Mobile number is required",
                         pattern: {
                           value: /^[0-9]*$/,
-                          message:
-                            "Mobile number should contain only numbers",
+                          message: "Mobile number should contain only numbers",
                         },
                         minLength: {
                           value: 3,
@@ -297,7 +297,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                         <div className="w-100">
                           <input
                             id="mobileNumber"
-                            className="rounded-md w-[100%]  px-4 py-2  outline-none placeholder:text-sm placeholder:font-normal"
+                            className="w-[100%] rounded-md  px-4 py-2  outline-none placeholder:text-sm placeholder:font-normal"
                             {...field}
                             value={field.value || ""}
                             placeholder="9999 999 999"
@@ -312,7 +312,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                 </p>
               </div>
 
-              <div className="grid lg:grid-cols-2 gap-2 mt-4">
+              <div className="mt-4 grid gap-2 lg:grid-cols-2">
                 <div>
                   <ExchangeInput
                     control={control}
@@ -355,12 +355,12 @@ const SignupForm: React.FC<SignupFormProps> = ({
                     placeholder="**************"
                   />
                 </div>
-                <p className=" break-all text-xs font-normal text-gray-400">
-                  <span className=" font-bold">Password Criteria:</span>{" "}
-                  Should contain at least one Capital Letter,
-                  <br /> one Small Letter, one Number & one Symbol
-                </p>
               </div>
+              <p className=" break-all text-xs font-normal text-gray-400">
+                <span className=" font-bold">Password Criteria:</span> Should
+                contain at least one Capital Letter,
+                <br /> one Small Letter, one Number & one Symbol
+              </p>
 
               <div className="mt-4">
                 <Controller
@@ -379,7 +379,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                           value={field.value ?? ""}
                           className="mt-[2px] cursor-pointer"
                         />
-                        <div className="flex items-center flex-wrap md:text-sm text-xs">
+                        <div className="flex flex-wrap items-center text-xs md:text-sm">
                           I agree to the{" "}
                           {legalDocument
                             .filter(
@@ -387,14 +387,14 @@ const SignupForm: React.FC<SignupFormProps> = ({
                             )
                             .map((item, i) => (
                               <div key={i}>
-                                <span className="md:text-sm text-xs"> </span>
+                                <span className="text-xs md:text-sm"> </span>
                                 {item?.documentText !== "" ? (
                                   <span
                                     onClick={() => {
                                       setSelectedLegalDocument(item);
                                       setOpen("legalDocPopup");
                                     }}
-                                    className=" mx-1 cursor-pointer md:text-sm text-xs text-[#C1922E]"
+                                    className=" mx-1 cursor-pointer text-xs text-[#C1922E] md:text-sm"
                                   >
                                     Terms and conditions
                                   </span>
@@ -402,7 +402,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                                   <Link
                                     target="_blank"
                                     href={item?.documentLink}
-                                    className="mx-1 md:text-sm text-xs font-semibold text-[#C1922E]"
+                                    className="mx-1 text-xs font-semibold text-[#C1922E] md:text-sm"
                                   >
                                     Terms and conditions
                                   </Link>
@@ -421,7 +421,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                                       setSelectedLegalDocument(item);
                                       setOpen("legalDocPopup");
                                     }}
-                                    className=" cursor-pointer md:text-sm text-xs text-[#C1922E]"
+                                    className=" cursor-pointer text-xs text-[#C1922E] md:text-sm"
                                   >
                                     <span className=" mx-1 text-black">
                                       and
@@ -432,7 +432,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
                                   <Link
                                     target="_blank"
                                     href={item.documentLink}
-                                    className="md:text-sm text-xs font-semibold text-[#C1922E]"
+                                    className="text-xs font-semibold text-[#C1922E] md:text-sm"
                                   >
                                     <span className=" mx-1 text-black">
                                       and
@@ -470,8 +470,8 @@ const SignupForm: React.FC<SignupFormProps> = ({
                   color="white"
                   borderRadius="0.3rem"
                   type="submit"
-                  style={{ padding: "10px 50px", marginBottom: '10px' }}
-                  className="sm:w-[0%] w-full"
+                  style={{ padding: "10px 50px", marginBottom: "10px" }}
+                  className="w-full sm:w-[0%]"
                 />
               </div>
             </form>
@@ -480,11 +480,7 @@ const SignupForm: React.FC<SignupFormProps> = ({
 
         {/* Right side: Image */}
         <div className="hidden h-full w-full lg:block">
-          <Image
-            src={loginicon}
-            alt="Login illustration"
-            className="h-full w-full"
-          />
+          <AuthScreen />
         </div>
       </div>
     </>

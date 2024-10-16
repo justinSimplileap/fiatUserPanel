@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import home from "../../assets/navicons/home.svg";
 import exchange from "../../assets/navicons/exchange.svg";
@@ -9,16 +8,13 @@ import counterIcon from "../../assets/navicons/counterparties.svg";
 import transfers from "../../assets/navicons/transfers.svg";
 import reports from "../../assets/navicons/report.svg";
 import profile from "../../assets/navicons/profile.svg";
-import invoices from "../../assets/navicons/invoice.svg";
-import bulkupload from "../../assets/navicons/bulkupload.svg";
 import { SidebarContext } from "../context/SidebarProvider";
 import logout from "~/assets/navicons/logout.svg";
 import { RiCloseCircleLine } from "react-icons/ri";
 import { logout as LogoutUser } from "~/helpers/helper";
-import { ApiHandler } from "~/service/UtilService";
 import localStorageService from "~/service/LocalstorageService";
 import useGlobalStore from "~/store/useGlobalStore";
-import { checkMerchants, checkUserStatus } from "~/service/api/accounts";
+import { checkUserStatus } from "~/service/api/accounts";
 import { useRouter } from "next/router";
 import menu from "../../assets/headericons/menu.svg";
 
@@ -67,6 +63,7 @@ const Sidebar: React.FC = () => {
 
   const routes: Route[] = [
     { name: "dashboard", path: "/app/dashboard", icon: home },
+    { name: "exchange", path: "/app/exchange", icon: exchange },
     { name: "transfers", path: "/app/transfers", icon: transfers },
     { name: "Reports", path: "/app/reports", icon: reports },
     { name: "Counterparties", path: "/app/counterparties", icon: counterIcon },
@@ -78,7 +75,7 @@ const Sidebar: React.FC = () => {
       {/* Desktop */}
       <nav
         className={`${
-          !open ? "w-full md:w-48 " : "w-[70px]"
+          !open ? "w-full md:w-52 " : "w-[70px]"
         }   hidden h-screen bg-black duration-500 md:block`}
       >
         <div className="logo relative flex h-20 items-center justify-center bg-black ">
@@ -121,7 +118,7 @@ const Sidebar: React.FC = () => {
                   src={item.icon as StaticImageData}
                   className={`font-semibold opacity-50 group-hover:opacity-100 ${
                     pathName === item.path && "opacity-100"
-                  }  `}
+                  } h-6 w-6  `}
                 />
                 <h1
                   className={`font-semibold group-hover:text-[#fff] ${
@@ -156,62 +153,38 @@ const Sidebar: React.FC = () => {
       </nav>
       {/* Mobile */}
       <nav
-        className={`fixed h-full  w-1/2 bg-black lg:w-[35vw] ${
-          open ? "left-0" : "-left-full"
-        } top-0 z-[9999] block p-1 duration-500 md:hidden`}
+        className={`fixed h-[90vh] w-1/2 bg-black lg:w-[35vw] ${
+          open ? "right-0" : "-right-full"
+        } top-20 z-[9999]  flex flex-col justify-between p-1 duration-500  md:hidden`}
       >
-        <div className="logo relative flex  justify-end p-5 text-white">
-          <RiCloseCircleLine
-            onClick={handleSidebar}
-            className="h-5 w-5 cursor-pointer"
-          />
-        </div>
-        <div className="logo relative flex  items-center justify-center text-white">
-          {admin?.profileImgLink && (
-            <Image
-              alt={"Profile"}
-              className=" object-cover"
-              src={blktrade}
-              width={"200"}
-              height={"200"}
-              priority={true}
-            />
-          )}
-        </div>
-
-        <div className=" flex flex-col justify-center gap-7 pl-6 capitalize">
+        <div className="mt-10 flex flex-col justify-center gap-7 pl-6 capitalize">
           {routes.map((item: any, i: any) => (
             <div
               key={i}
-              // href={item.path}
               onClick={() => {
                 handleNavigate(item.path);
               }}
-              className="group flex cursor-pointer items-center gap-4 "
+              className="group flex cursor-pointer items-center gap-4"
             >
               <Image
                 alt=""
                 src={item.icon as StaticImageData}
                 className={`${
                   pathName === item.path ? "opacity-100" : "opacity-50"
-                }`}
+                } h-6 w-6`}
               />
               <h1
-                style={
-                  {
-                    // transitionDelay: `${i + 3}00ms`,
-                  }
-                }
                 className={`text-[#8B8D91] group-hover:text-white ${
                   pathName === item.path && "text-white"
-                }  ${!open && "pointer-events-none opacity-0"}`}
+                } ${!open && "pointer-events-none opacity-0"}`}
               >
                 {item?.name}
               </h1>
             </div>
           ))}
         </div>
-        <div className="absolute bottom-6 mt-5 flex flex-col justify-center gap-7 pl-6 capitalize">
+        {/* Updated bottom div with padding */}
+        <div className=" my-5  flex flex-col justify-center gap-7 pl-6 capitalize">
           <button
             className="group flex cursor-pointer items-center gap-3"
             onClick={LogoutUser}
@@ -223,7 +196,7 @@ const Sidebar: React.FC = () => {
             />
             <h1
               className={`text-[#8B8D91] group-hover:text-white ${
-                !open && "opacity-0 "
+                !open && "opacity-0"
               }`}
             >
               Logout

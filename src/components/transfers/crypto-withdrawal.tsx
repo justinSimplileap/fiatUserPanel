@@ -6,38 +6,25 @@ import {
   type ChangeEvent,
   useEffect,
 } from "react";
-import {
-  Autocomplete,
-  TextField,
-  useMediaQuery,
-} from "@mui/material";
+import { Autocomplete, TextField, useMediaQuery } from "@mui/material";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import Image, { type StaticImageData } from "next/image";
 import TransitionDialog from "../common/TransitionDialog";
 import TwoFA from "../TwoFA";
 import useAsyncMasterStore from "~/hooks/useAsyncMasterStore";
 import useGlobalStore from "~/store/useGlobalStore";
-import {
-  getLimits,
-  getEuroTemplates,
-} from "~/service/api/transaction";
+import { getLimits, getEuroTemplates } from "~/service/api/transaction";
 import toast from "react-hot-toast";
 import useDashboard from "~/hooks/useDashboard";
 import Router, { useRouter } from "next/router";
 import ConfirmDailog from "./confirmDailog";
 import { ApiHandler } from "~/service/UtilService";
-import {
-  SendEuroMail,
-  createTransfer,
-} from "~/service/ApiRequests";
-import {
-  changeName,
-  coinForKrakenName,
-} from "~/helpers/helper";
+import { SendEuroMail, createTransfer } from "~/service/ApiRequests";
+import { changeName, coinForKrakenName } from "~/helpers/helper";
 import localStorageService from "~/service/LocalstorageService";
 import { getTransferFeesByPricelistId } from "~/service/api/pricelists";
 import CryptoTable from "./crypto-table";
-import DownArrow from "../../assets/general/arrow_down.svg"
+import DownArrow from "../../assets/general/arrow_down.svg";
 
 const WithdrawalInit: CryptoWithdrawalForm = {
   assetId: "",
@@ -70,7 +57,7 @@ const WithdrawalInit: CryptoWithdrawalForm = {
   transferFee: "",
   paymentSystemType: "",
   customerZipcode: "",
-  euroTemplate: ""
+  euroTemplate: "",
 };
 
 const FeeInit: CalculatedFee = {
@@ -90,7 +77,6 @@ const CryptoWithdrawal = () => {
   const dashboard = useGlobalStore((state) => state.dashboard);
   const router = useRouter();
   const countryList = useAsyncMasterStore<"country">("country");
-
 
   // Accessing router properties
   const { pathname, query, asPath } = router;
@@ -139,7 +125,7 @@ const CryptoWithdrawal = () => {
     if (user.priceList) {
       getUserPriceList(user.priceList);
     }
-    console.log("countryList", countryList)
+    console.log("countryList", countryList);
   }, []);
 
   const assetId = watch("assetId");
@@ -295,7 +281,7 @@ const CryptoWithdrawal = () => {
       if (data.result[changeName(pair2)]) {
         return data.result[changeName(pair2)]?.a[0];
       }
-    } catch (error) { }
+    } catch (error) {}
   };
 
   const onSubmit = (data: CryptoWithdrawalForm) => {
@@ -349,11 +335,11 @@ const CryptoWithdrawal = () => {
         oneTimeAddress:
           transaction.data.addressType === "WHITELIST"
             ? whitelistOptions.find(
-              (item) => item.id === transaction.data.whitelistId,
-            )?.assetAddress
+                (item) => item.id === transaction.data.whitelistId,
+              )?.assetAddress
             : transaction.data.addressType === "ONETIME"
-              ? transaction.data.oneTimeAddress
-              : "",
+            ? transaction.data.oneTimeAddress
+            : "",
         description: transaction?.data?.description,
         transactionFee: transaction?.fee?.fee,
       };
@@ -409,15 +395,15 @@ const CryptoWithdrawal = () => {
   return (
     <div>
       <div className="">
-        <p className="lg:mt-8 mt-4 mb-3 text-center text-base font-semibold">
+        <p className="mb-3 mt-4 text-center text-base font-semibold lg:mt-8">
           CREATE A NEW TRANSFER
         </p>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col justify-center gap-4 md:flex-row">
-            <div className={`${`w-full lg:w-[34%] md:w-full`}  `}>
+            <div className={`${`w-full md:w-full lg:w-[34%]`}  `}>
               <div className="flex flex-col gap-2 rounded bg-white p-6 pb-16 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] ">
                 <div className="border-b-2 pb-4 lg:flex lg:content-between lg:items-center">
-                  <p className="font-bold me-5 lg:pb-0 pb-3">Basic Details</p>
+                  <p className="me-5 pb-3 font-bold lg:pb-0">Basic Details</p>
                   <Controller
                     control={control}
                     name="assetId"
@@ -474,17 +460,20 @@ const CryptoWithdrawal = () => {
                                 endAdornment: (
                                   <Fragment>
                                     <Image
-                                      className="md:h-2 md:w-3 h-2 w-2"
+                                      className="h-2 w-2 md:h-2 md:w-3"
                                       src={DownArrow}
                                       alt="down arrow"
                                       width={10}
                                       height={6}
-                                      style={{ padding: '0', marginRight: '0px' }}
+                                      style={{
+                                        padding: "0",
+                                        marginRight: "0px",
+                                      }}
                                     />
                                   </Fragment>
                                 ),
                                 sx: {
-                                  paddingRight: '15px !important',
+                                  paddingRight: "15px !important",
                                 },
                               }}
                               variant="outlined"
@@ -557,17 +546,20 @@ const CryptoWithdrawal = () => {
                                 endAdornment: (
                                   <Fragment>
                                     <Image
-                                      className="md:h-3 md:w-3 h-2 w-2"
+                                      className="h-2 w-2 md:h-3 md:w-3"
                                       src={DownArrow}
                                       alt="down arrow"
                                       width={12}
                                       height={8}
-                                      style={{ padding: '0', marginRight: '0px' }} // Adjust padding here
+                                      style={{
+                                        padding: "0",
+                                        marginRight: "0px",
+                                      }} // Adjust padding here
                                     />
                                   </Fragment>
                                 ),
                                 sx: {
-                                  paddingRight: '15px !important', // Remove the right padding applied by default
+                                  paddingRight: "15px !important", // Remove the right padding applied by default
                                 },
                               }}
                               variant="outlined"
@@ -578,7 +570,6 @@ const CryptoWithdrawal = () => {
                       </Fragment>
                     )}
                   />
-
                 </div>
 
                 <div>
@@ -642,14 +633,12 @@ const CryptoWithdrawal = () => {
                       type="checkbox"
                       id="max"
                     />
-                    <label
-                      className="text-md text-[#6E6E6E]"
-                      htmlFor="max"
-                    >
+                    <label className="text-md text-[#6E6E6E]" htmlFor="max">
                       Max (
                       {assetBalance?.balance
-                        ? `${Number(assetBalance?.balance).toFixed(6) ?? 0} ${assetBalance?.name ?? ""
-                        }`
+                        ? `${Number(assetBalance?.balance).toFixed(6) ?? 0} ${
+                            assetBalance?.name ?? ""
+                          }`
                         : 0}
                       )
                     </label>
@@ -717,17 +706,20 @@ const CryptoWithdrawal = () => {
                                 endAdornment: (
                                   <Fragment>
                                     <Image
-                                      className="md:h-3 md:w-3 h-2 w-2"
+                                      className="h-2 w-2 md:h-3 md:w-3"
                                       src={DownArrow}
                                       alt="down arrow"
                                       width={12}
                                       height={8}
-                                      style={{ padding: '0', marginRight: '0px' }} // Adjust padding
+                                      style={{
+                                        padding: "0",
+                                        marginRight: "0px",
+                                      }} // Adjust padding
                                     />
                                   </Fragment>
                                 ),
                                 sx: {
-                                  paddingRight: '15px !important', // Remove extra padding
+                                  paddingRight: "15px !important", // Remove extra padding
                                 },
                               }}
                               variant="outlined"
@@ -738,37 +730,33 @@ const CryptoWithdrawal = () => {
                       </Fragment>
                     )}
                   />
-
                 </div>
               </div>
-              <div className="flex flex-col gap-2 rounded  bg-[#C1902D1F]  shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:mt-6 mt-4 md:px-12 md:py-12 px-6">
-                <div className="flex justify-between text-base font-bold py-3">
+              <div className="mt-4 flex flex-col gap-2  rounded  bg-[#C1902D1F] px-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:mt-6 md:px-12 md:py-12">
+                <div className="flex justify-between py-3 text-base font-bold">
                   <span>Transfers</span>
                   <span>0</span>
                 </div>
 
-                <div className="flex justify-between text-base font-bold py-3">
+                <div className="flex justify-between py-3 text-base font-bold">
                   <span>Fees</span>
                   <span>0</span>
                 </div>
-                <div className="flex justify-between text-base font-bold py-3">
+                <div className="flex justify-between py-3 text-base font-bold">
                   <span>Amount</span>
                   <span>0</span>
                 </div>
               </div>
             </div>
-            <div className=" w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] lg:w-[64%] md:w-full">
+            <div className=" w-full rounded bg-white p-6 shadow-[0px_1px_3px_0px_rgba(0,0,0,0.25)] md:w-full lg:w-[64%]">
               <div className="w-full">
                 <div className="border-b-2 py-2">
                   <p className=" mb-4 font-bold">Enter Beneficiary Details</p>
                 </div>
                 <div className="w-full">
-                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
-                    <div className=" text-base  md:col-span-2 pt-4">
-                      <label
-                        className="text-base text-[#6E6E6E]"
-                        htmlFor="max"
-                      >
+                  <div className="w-full grid-cols-1 items-baseline gap-4 lg:grid lg:grid-cols-2">
+                    <div className=" pt-4  text-base md:col-span-2">
+                      <label className="text-base text-[#6E6E6E]" htmlFor="max">
                         Enter Customer Info
                       </label>
                     </div>
@@ -843,10 +831,13 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Test 2 */}
-                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
+                  <div className="w-full grid-cols-1 items-baseline gap-4 lg:grid lg:grid-cols-2">
                     {/* Customer address*  */}
                     <div className="pt-4">
-                      <LabelName name="customerAddress" label="Customer address*"></LabelName>
+                      <LabelName
+                        name="customerAddress"
+                        label="Customer address*"
+                      ></LabelName>
                       <div className="flex flex-col">
                         <Controller
                           name="customerAddress"
@@ -876,7 +867,7 @@ const CryptoWithdrawal = () => {
                       </div>
                     </div>
 
-                    <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
+                    <div className="w-full grid-cols-1 items-baseline gap-4 lg:grid lg:grid-cols-2">
                       {/* Zip code  */}
                       <div className="pt-4">
                         <LabelName name="Zipcode" label="Zip code*"></LabelName>
@@ -948,7 +939,7 @@ const CryptoWithdrawal = () => {
                   </div>
 
                   {/* Test 3 */}
-                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-3">
+                  <div className="w-full grid-cols-1 items-baseline gap-4 lg:grid lg:grid-cols-3">
                     {/* Country*  */}
 
                     <div className="pt-4">
@@ -976,7 +967,10 @@ const CryptoWithdrawal = () => {
                                 return option.name ? option.name : value;
                               }}
                               renderOption={(props, option) => (
-                                <li {...props} className="flex cursor-pointer items-center gap-2 p-2">
+                                <li
+                                  {...props}
+                                  className="flex cursor-pointer items-center gap-2 p-2"
+                                >
                                   <Image
                                     src={option.icon ?? ""}
                                     alt={option.name}
@@ -1010,7 +1004,7 @@ const CryptoWithdrawal = () => {
                                     endAdornment: (
                                       <Fragment>
                                         <Image
-                                          className="md:h-3 md:w-3 h-2 w-2"
+                                          className="h-2 w-2 md:h-3 md:w-3"
                                           src={DownArrow}
                                           alt="down arrow"
                                           width={12}
@@ -1019,18 +1013,19 @@ const CryptoWithdrawal = () => {
                                       </Fragment>
                                     ),
                                     sx: {
-                                      paddingRight: '15px !important',
+                                      paddingRight: "15px !important",
                                     },
                                   }}
                                   variant="outlined"
                                 />
                               )}
                             />
-                            <p className="text-sm text-red-500">{error?.message}</p>
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
                           </Fragment>
                         )}
                       />
-
                     </div>
 
                     {/* Reference  */}
@@ -1105,12 +1100,9 @@ const CryptoWithdrawal = () => {
                     </div>
                   </div>
 
-                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
-                    <div className=" text-base  md:col-span-2 lg:pt-12 pt-8">
-                      <label
-                        className="text-base text-[#6E6E6E]"
-                        htmlFor="max"
-                      >
+                  <div className="w-full grid-cols-1 items-baseline gap-4 lg:grid lg:grid-cols-2">
+                    <div className=" pt-8  text-base md:col-span-2 lg:pt-12">
+                      <label className="text-base text-[#6E6E6E]" htmlFor="max">
                         Enter Banking Info
                       </label>
                     </div>
@@ -1187,7 +1179,10 @@ const CryptoWithdrawal = () => {
                   <div className="grid w-full grid-cols-1 items-baseline gap-4 md:grid-cols-1">
                     {/* Bank address*  */}
                     <div className="pt-4">
-                      <LabelName name="Bankaddress" label="Bank address*"></LabelName>
+                      <LabelName
+                        name="Bankaddress"
+                        label="Bank address*"
+                      ></LabelName>
                       <div className="flex flex-col">
                         <Controller
                           name="Bankaddress"
@@ -1218,10 +1213,13 @@ const CryptoWithdrawal = () => {
                     </div>
                   </div>
 
-                  <div className="lg:grid w-full grid-cols-1 items-baseline gap-4 lg:grid-cols-2">
+                  <div className="w-full grid-cols-1 items-baseline gap-4 lg:grid lg:grid-cols-2">
                     {/* Bank Location*  */}
                     <div className="pt-4">
-                      <LabelName name="Banklocation" label="Bank Location*"></LabelName>
+                      <LabelName
+                        name="Banklocation"
+                        label="Bank Location*"
+                      ></LabelName>
                       <div className="flex flex-col">
                         <Controller
                           name="Banklocation"
@@ -1275,7 +1273,10 @@ const CryptoWithdrawal = () => {
                                 return option.name ? option.name : value;
                               }}
                               renderOption={(props, option) => (
-                                <li {...props} className="flex cursor-pointer items-center gap-2 p-2">
+                                <li
+                                  {...props}
+                                  className="flex cursor-pointer items-center gap-2 p-2"
+                                >
                                   <Image
                                     src={option.icon ?? ""}
                                     alt={option.name}
@@ -1309,7 +1310,7 @@ const CryptoWithdrawal = () => {
                                     endAdornment: (
                                       <Fragment>
                                         <Image
-                                          className="md:h-3 md:w-3 h-2 w-2"
+                                          className="h-2 w-2 md:h-3 md:w-3"
                                           src={DownArrow}
                                           alt="down arrow"
                                           width={12}
@@ -1318,14 +1319,16 @@ const CryptoWithdrawal = () => {
                                       </Fragment>
                                     ),
                                     sx: {
-                                      paddingRight: '15px !important',
+                                      paddingRight: "15px !important",
                                     },
                                   }}
                                   variant="outlined"
                                 />
                               )}
                             />
-                            <p className="text-sm text-red-500">{error?.message}</p>
+                            <p className="text-sm text-red-500">
+                              {error?.message}
+                            </p>
                           </Fragment>
                         )}
                       />
@@ -1348,14 +1351,10 @@ const CryptoWithdrawal = () => {
                       type="checkbox"
                       id="max"
                     />
-                    <label
-                      className="text-md  text-[#6E6E6E]"
-                      htmlFor="max"
-                    >
+                    <label className="text-md  text-[#6E6E6E]" htmlFor="max">
                       Save template
                     </label>
                   </div>
-
                 </div>
               </div>
             </div>
@@ -1369,14 +1368,14 @@ const CryptoWithdrawal = () => {
                 transaction.data.addressType === "ONETIME"
                   ? transaction.data.oneTimeAddress
                   : whitelistOptions.find(
-                    (item) => item.id === transaction.data.whitelistId,
-                  )?.assetAddress
+                      (item) => item.id === transaction.data.whitelistId,
+                    )?.assetAddress
               }
               label={
                 transaction.data.addressType === "WHITELIST"
                   ? whitelistOptions.find(
-                    (item) => item.id === transaction.data.whitelistId,
-                  )?.label
+                      (item) => item.id === transaction.data.whitelistId,
+                    )?.label
                   : ""
               }
               amount={transaction?.fee}

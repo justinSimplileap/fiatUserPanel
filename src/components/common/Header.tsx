@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Check from "../../assets/general/check.png";
-import menu from "../../assets/headericons/menu.svg";
+import menu from "../../assets/general/hamburger-menu.svg";
 import message from "../../assets/headericons/message.svg";
 import flag from "../../assets/headericons/IMAGE.svg";
 import { SidebarContext } from "../context/SidebarProvider";
@@ -109,30 +109,39 @@ const Topbar: React.FC<HeaderProps> = ({ title }) => {
       style={{
         boxShadow: "1.1802083253860474px 0px 5.901041507720947px 0px #0000000D",
       }}
-      className=" relative  bg-white text-black"
+      className="relative bg-white text-black"
     >
       <div
-        className={` z-[9999] m-auto flex h-20 w-[95%] items-center justify-between`}
+        className={`z-[9999] m-auto flex h-20 w-[95%] items-center justify-between`}
       >
         <div className="flex items-center gap-8">
+          <h1 className="px-1   text-lg">
+            {title === "bulkPayout" ? "Bulk Payout" : title}
+          </h1>
+        </div>
+        <div className="flex items-center gap-8">
+          <Image
+            className="hidden md:block"
+            alt=""
+            src={message as StaticImageData}
+          />
+          <div className=" hidden items-center gap-3 md:flex ">
+            <Image alt="" src={flag as StaticImageData} />
+            <p>English</p>
+          </div>
+
+          <Image
+            className="hidden md:block "
+            alt=""
+            src={profile as StaticImageData}
+          />
+
           <Image
             src={menu as StaticImageData}
             alt=""
             className="cursor-pointer md:hidden "
             onClick={handleSidebar}
           />
-          <h1 className="px-1 text-sm  md:text-lg">
-            {title === "bulkPayout" ? "Bulk Payout" : title}
-          </h1>
-        </div>
-        <div className="flex items-center gap-8">
-          <Image className=" " alt="" src={message as StaticImageData} />
-          <div className="flex items-center gap-3 ">
-            <Image alt="" src={flag as StaticImageData} />
-            <p>English</p>
-          </div>
-
-          <Image className=" " alt="" src={profile as StaticImageData} />
         </div>
       </div>
     </div>

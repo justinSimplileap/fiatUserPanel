@@ -9,7 +9,6 @@ import useGlobalStore from "~/store/useGlobalStore";
 import { decryptResponse } from "~/helpers/helper";
 import { ApiHandler } from "~/service/UtilService";
 import MuiButton from "../MuiButton";
-import loginicon from "../../assets/auth/login.svg";
 import blktrade from "../../assets/navicons/blktrade.png";
 import { useForm, Controller } from "react-hook-form";
 import ExchangeInput from "../common/ExchangeInput";
@@ -19,7 +18,7 @@ import { Autocomplete, Dialog, TextField } from "@mui/material";
 import Image, { type StaticImageData } from "next/image";
 
 import Close from "~/assets/general/close.svg";
-
+import AuthScreen from "../common/AuthScreen";
 
 interface OtpInputProps {
   onOtpSubmit: (otp: string) => void;
@@ -63,13 +62,12 @@ const OtpInput: React.FC<OtpInputProps> = ({
     }
   };
 
-
   return (
     <>
       <Toaster />
-      <div className="grid h-screen grid-cols-1 bg-white lg:grid-cols-2 p-4">
+      <div className="grid h-screen grid-cols-1 bg-white p-4 lg:grid-cols-2">
         {/* Left side: Form */}
-        <div className="m-auto rounded  lg:w-[60%] my-6">
+        <div className="m-auto my-6  rounded lg:w-[60%]">
           <div className="flex flex-col gap-2">
             <div className="logo relative flex items-center justify-center py-8 ">
               <Image
@@ -91,7 +89,9 @@ const OtpInput: React.FC<OtpInputProps> = ({
                 Please enter a 6-digit number sent to {phone}
               </div>
 
-              <div className="mb-2 mt-2 text-xs">OTP is valid for 10 minutes</div>
+              <div className="mb-2 mt-2 text-xs">
+                OTP is valid for 10 minutes
+              </div>
               <div className="mt-10 space-x-2">
                 {[0, 1, 2, 3, 4, 5].map((index) => (
                   <Controller
@@ -108,10 +108,11 @@ const OtpInput: React.FC<OtpInputProps> = ({
                         value={field.value || ""}
                         type="text"
                         maxLength={1}
-                        className={`xl:h-16 xl:w-16 h-10 w-10 rounded-md border text-center ${errors["otp" + index]
+                        className={`h-10 w-10 rounded-md border text-center xl:h-16 xl:w-16 ${
+                          errors["otp" + index]
                             ? "border-red-500"
                             : "border-gray-300"
-                          }`}
+                        }`}
                         ref={(el) => {
                           inputRefs.current[index] = el;
                         }}
@@ -147,7 +148,10 @@ const OtpInput: React.FC<OtpInputProps> = ({
                 <span className="ml-auto text-yellow-600">{time}</span>
               </div>
               <div className="mt-20 flex">
-                <button type="button" onClick={() => changeScreen("formScreen")}>
+                <button
+                  type="button"
+                  onClick={() => changeScreen("formScreen")}
+                >
                   Cancel
                 </button>
                 <button
@@ -158,17 +162,17 @@ const OtpInput: React.FC<OtpInputProps> = ({
                 </button>
               </div>
             </form>
-
           </div>
         </div>
 
         {/* Right side: Image */}
         <div className="hidden h-full w-full lg:block">
-          <Image
+          {/* <Image
             src={loginicon}
             alt="Login illustration"
             className="h-full w-full"
-          />
+          /> */}
+          <AuthScreen />
         </div>
       </div>
     </>

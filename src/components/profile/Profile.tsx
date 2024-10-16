@@ -376,7 +376,8 @@ const Profile = () => {
                 className=" w-full text-ellipsis  break-all rounded-md bg-white p-6 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)]"
               >
                 <div className="my-2 flex items-center gap-2">
-                  <Image src={item.icon} alt="" /> <p>{item.name}</p>
+                  <Image src={item.icon} className="h-5 w-5" alt="" />{" "}
+                  <p>{item.name}</p>
                 </div>
                 <span className="text-gray-500">Virtual Account Name</span>
                 <p className=" font-semibold">{item.accountName}</p>

@@ -2,7 +2,6 @@ import Link from "next/link";
 import React, { Fragment, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import ExchangeInput from "../common/ExchangeInput";
-import Button from "../common/Button";
 import toast, { Toaster } from "react-hot-toast";
 import { fetchCountries, fetchSecurity, login } from "~/service/ApiRequests";
 import ErrorResponse from "~/service/ErrorResponse";
@@ -13,13 +12,14 @@ import { countryFlags, decryptResponse } from "~/helpers/helper";
 import { ApiHandler } from "~/service/UtilService";
 import MuiButton from "../MuiButton";
 import Image from "next/image";
-import loginicon from "../../assets/auth/login.svg";
+
 import blktrade from "../../assets/navicons/blktrade.png";
 import { Autocomplete, TextField } from "@mui/material";
 import {
-  DropDownOptionsResponseType,
-  DropDownOptionsType,
+  type DropDownOptionsResponseType,
+  type DropDownOptionsType,
 } from "~/types/Common";
+import AuthScreen from "../common/AuthScreen";
 
 interface FormData {
   emailOrPhone: string;
@@ -226,7 +226,7 @@ const LoginForm: React.FC = () => {
   return (
     <>
       <Toaster />
-      <div className="grid h-screen grid-cols-1 bg-white md:grid-cols-2">
+      <div className="grid h-screen grid-cols-1 bg-white lg:grid-cols-2">
         {/* Left side: Form */}
         <div className="m-auto rounded  md:w-[50%]">
           <div className="flex flex-col gap-2">
@@ -451,13 +451,7 @@ const LoginForm: React.FC = () => {
         </div>
 
         {/* Right side: Image */}
-        <div className="hidden h-full w-full md:block">
-          {/* <Image
-            src={loginicon} // Replace with your actual image path
-            alt="Login illustration"
-            className="h-full w-full object-cover"
-          /> */}
-        </div>
+        <AuthScreen />
       </div>
     </>
   );

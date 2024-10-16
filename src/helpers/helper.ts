@@ -6,6 +6,10 @@ import { CryptoRowData, displayFilterType, RowData } from "~/types/Common";
 import EURO_COIN from "../assets/currency/EURO_COIN.svg";
 import GBP_COIN from "../assets/currency/GBP_COIN.svg";
 import USD_COIN from "../assets/currency/USD_COIN.svg";
+import JPN_COIN from "../assets/countries/japan.svg";
+import SOUTHKORIA_COIN from "../assets/countries/southkorea.svg";
+import SINGAPUR from "../assets/countries/singapore.svg";
+import CHINA from "../assets/countries/china.svg";
 import antigua from "~/assets/countryCodes/Antigua_1268.svg";
 import bosnia from "~/assets/countryCodes/bosnia_387.svg";
 import czech from "~/assets/countryCodes/czech_420.svg";
@@ -613,6 +617,58 @@ export const cards = [
     bankName: "EUbank",
     bankAddress: "24, Williams street, London",
     country: "United Kingdom",
+  },
+
+  {
+    name: "JPN",
+    icon: JPN_COIN,
+    balance: 58764.64,
+    accountNumber: "1JunQ*****1Q2N",
+    accountName: "Name",
+    bic: "PYYY123423",
+    vIBAN: "GB907097978687AHJHBAS",
+    bankName: "JPN",
+    bankAddress: "24, Williams street, London",
+    country: "Japan",
+  },
+
+  {
+    name: "CHN",
+    icon: CHINA,
+    balance: 58764.64,
+    accountNumber: "1JunQ*****1Q2N",
+    accountName: "Name",
+    bic: "PYYY123423",
+    vIBAN: "GB907097978687AHJHBAS",
+    bankName: "CHINA",
+    bankAddress: "24, Williams street, London",
+    country: "China",
+  },
+
+  {
+    name: "SNP",
+    icon: SINGAPUR,
+    balance: 58764.64,
+    accountNumber: "1JunQ*****1Q2N",
+    accountName: "Name",
+    bic: "PYYY123423",
+    vIBAN: "GB907097978687AHJHBAS",
+    bankName: "SINGAPUR",
+    bankAddress: "24, Williams street, London",
+    country: "Singapore",
+  },
+
+  {
+    name: "SOK",
+    icon: SOUTHKORIA_COIN,
+    balance: 58764.64,
+    accountNumber: "1JunQ*****1Q2N",
+    accountName: "Name",
+    bic: "PYYY123423",
+    vIBAN: "GB907097978687AHJHBAS",
+    bankName: "SOUTHKORIA",
+    bankAddress: "24, Williams street, London",
+    country: "South Korea",
   },
 ];
 

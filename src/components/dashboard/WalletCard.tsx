@@ -1,12 +1,13 @@
-import { Fragment, useCallback, useState } from "react";
+import React, { Fragment, useCallback, useState } from "react";
 import Image, { type StaticImageData } from "next/image";
 import Link from "next/link";
 import arrowUp from "../../assets/general/arrowup.svg";
 import qrScanner from "../../assets/general/qr_code_scanner.svg";
 import { euroFormat, maskAddress } from "~/helpers/helper";
-import { Dialog, Snackbar } from "@mui/material";
+import { Box, Dialog, Popover, Snackbar, Typography } from "@mui/material";
 import Copy from "~/assets/general/copy.svg";
-import right_arrow from "~/assets/general/right_arrow.svg";
+import eyeIcon from "~/assets/general/eye.svg";
+import { theme } from "~/constants/constant";
 
 type imageType = StaticImageData;
 function formatCurrency(balance: number) {
@@ -19,8 +20,6 @@ function formatCurrency(balance: number) {
   return { integerPart, decimalPart };
 }
 const WalletCard: React.FC<any> = ({ walletDetails }) => {
-  console.log("walletDetails: ", walletDetails);
-
   const { integerPart, decimalPart } = formatCurrency(walletDetails.balance);
   const [messagePopup, setMessagePopup] = useState(false);
 
@@ -43,11 +42,27 @@ const WalletCard: React.FC<any> = ({ walletDetails }) => {
       : "";
   }
 
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null);
+
+  const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
     <Fragment>
-      <div
+      <Box
+        aria-owns={open ? "mouse-over-popover" : undefined}
+        aria-haspopup="true"
+        onMouseEnter={handlePopoverOpen}
+        onMouseLeave={handlePopoverClose}
         key={walletDetails.id}
-        className="exchangeCard gradientCard rounded-md bg-white p-5
+        className="flex flex-col gap-2 break-words rounded-md bg-white p-5
         shadow-[0px_4px_8px_0px_rgba(0,0,0,0.1)]"
       >
         <div className="flex items-center justify-between gap-8">
@@ -61,7 +76,10 @@ const WalletCard: React.FC<any> = ({ walletDetails }) => {
             />
 
             <div>
-              <p className="text-sm font-medium text-gray-500">
+              <p
+                className="text-sm font-medium "
+                style={{ color: `${theme.text.color.primary}` }}
+              >
                 {walletDetails.name}
               </p>
             </div>
@@ -71,21 +89,70 @@ const WalletCard: React.FC<any> = ({ walletDetails }) => {
         <div className="flex items-center justify-between">
           <p className="flex items-baseline text-[30px] font-medium">
             {currencyIcon(walletDetails.name)} {integerPart}
-            <span className="text-[20px] text-gray-500">.{decimalPart}</span>
+            <span
+              className="text-[20px]"
+              style={{ color: `${theme.text.color.primary}` }}
+            >
+              .{decimalPart}
+            </span>
           </p>
-          <Link href={`./transfers/?from=` + walletDetails.assetId}>
-            <Image alt="" src={arrowUp as imageType} />
-          </Link>
         </div>
 
-        <Link
-          className=" my-2 flex cursor-pointer items-center gap-2"
-          href={`./profile`}
+        <Typography className="flex  gap-2">
+          <p style={{ fontSize: `${theme.text.fontSize.medium}` }}>
+            View Account info{" "}
+          </p>
+          <Image alt="" className="h-5 w-5" src={eyeIcon as imageType} />
+        </Typography>
+
+        <Popover
+          id="mouse-over-popover"
+          sx={{ pointerEvents: "none" }}
+          open={open}
+          anchorEl={anchorEl}
+          anchorOrigin={{
+            vertical: "bottom",
+            horizontal: "left",
+          }}
+          transformOrigin={{
+            vertical: "top",
+            horizontal: "left",
+          }}
+          onClose={handlePopoverClose}
+          disableRestoreFocus
         >
-          <p className="text-md">View Account info </p>
-          <Image alt="" src={right_arrow as imageType} />
-        </Link>
-      </div>
+          <div className=" w-full text-ellipsis  break-all rounded-md bg-white p-4 shadow-[0px_16px_32px_0px_rgba(0,0,0,0.04)]">
+            <span style={{ color: `${theme.text.color.primary}` }}>
+              Virtual Account Name
+            </span>
+            <p className=" font-semibold">{walletDetails.accountName}</p>
+            <div className="m-1"></div>
+            <span style={{ color: `${theme.text.color.primary}` }}>BIC</span>
+            <p className="font-semibold">{walletDetails.bic}</p>
+            <div className="m-1"></div>
+            <span style={{ color: `${theme.text.color.primary}` }}>vIBAN</span>
+            <p className="font-semibold ">{walletDetails.vIBAN}</p>
+            <div className="m-1"></div>
+
+            <span style={{ color: `${theme.text.color.primary}` }}>
+              Bank Name
+            </span>
+            <p className="font-semibold">{walletDetails.bankName}</p>
+            <div className="m-1"></div>
+
+            <span style={{ color: `${theme.text.color.primary}` }}>
+              Bank Address
+            </span>
+            <p className="font-semibold">{walletDetails.bankAddress}</p>
+            <div className="m-1"></div>
+
+            <span style={{ color: `${theme.text.color.primary}` }}>
+              Bank Country
+            </span>
+            <p className="font-semibold">{walletDetails.country}</p>
+          </div>
+        </Popover>
+      </Box>
     </Fragment>
   );
 };
